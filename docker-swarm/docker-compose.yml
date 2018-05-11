@@ -1,0 +1,15 @@
+version: '3'
+services:
+  apiweb1:
+    image: myapache:v1
+    build: .
+    ports:
+    - "81:80"
+  apiweb2:
+    image: myapache:v1
+    ports:
+    - "82:80"
+  load-balancer:
+    image: nginx:latest
+    ports:
+    - "80:80"

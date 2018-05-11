@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: configmaptest
+spec:
+  containers:
+  - name: testcont
+    image: httpd:latest
+    env:
+    - name: what_school
+      valueFrom:
+        configMapKeyRef:
+          name: test-map
+          key: name

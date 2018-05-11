@@ -1,0 +1,13 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: testjob
+spec:
+  template:
+    spec:
+      containers:
+      - name: testjobcontainer
+        image: centos:latest
+        command: ["/bin/sleep","20"]
+      restartPolicy: Never
+  backoffLimit: 4

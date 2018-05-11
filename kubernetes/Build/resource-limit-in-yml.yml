@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: myresource
+spec:
+  containers:
+  - name: queue
+    image: httpd:latest
+    resources:
+      requests:
+        memory: "64Mi"   ## 64 Megabytes, it can be represented as M too
+        cpu: "250m"      ## 1/4 CPU , measuerd in millicpu
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+

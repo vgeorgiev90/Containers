@@ -1,0 +1,20 @@
+# For ingress to be aplied there must be ingress controller deployed
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: testingress
+  annotations:
+    ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: some.example.com
+    http:
+      paths:
+      - path: /service1
+        backend:
+          serviceName: s1
+          servicePort: 80
+      - path: /service2
+        backend:
+          serviceName: s2
+          servicePort: 80

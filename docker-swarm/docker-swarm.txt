@@ -1,0 +1,273 @@
+############### General ###################
+Docker and namespaces
+Namespaces provide isolation so that other piceses of the system remain unaffected by whatever is within the
+namespaces
+Docker uses namespaces of various kinds to provide the isolation that containers need in order to
+remain portable and refrain from affecting the remainder of the host system
+Docker Namespace types:
+process ID, mounts, IPC(inter process comunication), network
+
+Control Groups - they provide resource limitations and reporting capability within the container space
+They allow granular control over what host resources are allocated to the container and when.
+Docker cgroups:
+CPU, Memory, Bandwith, Disk ,Priority
+
+############### Install ###################
+#for redhat systems 
+dependancies - yum install yum-utils device-mapper-persistent-data lvm2
+#add the docker repo
+yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+#install latest ce edition
+yum install docker-ce
+
+Enable IPv4 forwarding (/etc/sysctl.conf)
+net.ipv4.ip_forward = 1
+#################### Storage driver ################
+It control how docker manages and stores images and containers (Backup your images if you change driver)
+Storage driver can be choosed and changed in /etc/docker create file daemon.json
+also you can find the option in the docker service file
+Device mapper can be used with existing or new block storage device
+Example:
+/etc/docker/daemon.json
+
+{
+  "storage-river": "devicemapper"
+}
+
+################### Configure logging driver ##########
+There are many avaialbe options for logging - most used: syslog , json-file, splunk
+{
+  "log-driver": "syslog"
+}
+
+#################### MAIN COMMANDS ################
+docker ps 
+# -a for all that has runned
+docker restart container_name/pid
+docker attach cont_name/pid
+docker search name
+docker images
+docker pull image:tags
+#--disable-content-trust  # disable check for untrusted repos
+
+docker run image:tags command
+# --restart always,on-failure,none,unless-stoped
+# --rm   # to delete the container after it is stopped
+# -i  interactive mode
+# -t  attach it to the terminal(tty)
+# -d  detached(daemonized)
+# -v volume manage (-v dir-name for whole disk mount) for particular dir mount ( /home/user/dir:/cont-dir
+# --net bridge-name
+# --name cont name
+# --ip 192.168.5.2 (only with --net)
+# -p port:toport (-P for auto port_map with dockerfile EXPORT)
+# --dns IP
+# example1:   docker run -it --net bridge04 --ip 192.168.4.23 -v /root/testdir:/container-dir centos:latest /bin/bash
+# example2:   docker run -id -p 8080:80 cont:tag command
+
+#search values from the json formated inspect output
+docker image/container inspect CONT/IMAGE --format '{{.ContainerConfig.Hostname}}'
+#for everything in section of the json file
+docker image/container inspect CONT/IMAGE --format '{{json.ContainerConfig.Hostname}}'
+
+#building with docker file
+# building from custom file
+docker build -t image:tag - < /path/to/dockerfile
+docker build -t dockerfile:v3 -f custom-docker-file .
+docker build -t TAG .
+# --pull  always pull latest image
+# --no-cache
+# --squash  make only 1 layer    Only availlable with docker experimental features enabled
+# docker build -f FILE .
+
+#Volume creation
+docker volume create NAME
+docker volume ls
+
+# To clear all docker related things in your system
+docker system prune -a
+
+#commit (save) container changes
+
+docker commit cont_name reference 
+# -m comment
+# -a creator
+# example     docker commit -m "ubuntu ssh and update" -a viktor keen_jackson viktor90/ubuntu:ver1
+
+docker rmi cont_name/id  #images
+docker rm cont/id        #container 
+
+
+docker logs cont-name
+
+# example     docker exec cont-name /bin/cat /etc/profile
+docker exec -u 0 -it cont_name /bin/bash
+#attach to cont with root
+
+# tag images 
+docker tag centos:6 myname:mytag
+
+# save image to tar file
+docker image save image:tag > image.tar
+# to load it
+docker import image.tar image-name:tag
+
+# Docker registry create
+openssl req -newkey rsa:4096 -nodes -sha256 -keyout certs/dockerrepo.key -x509 -days 365 -out certs/dockerrepo.crt -subj /CN=dockerrepo.test
+#generate cert and key
+mkdir /etc/docker/certs.d/domain:port
+mv file.crt /etc/docker/certs.d/domain:port/ca.crt
+docker pull registry:2
+docker run --entrypoint htpasswd registry:2 -Bbn user viktor123 > auth/htpasswd
+#run the registry
+docker run -d -p PORT:PORT -v `pwd`/certs:/certs -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/dockerrepo.crt -e REGISTRY_HTTP_TLS_KEY=/certs/dockerrepo.key -v `pwd`/auth:/auth -e REGISTRY_AUTH=htpasswd -e REGISTRY_AUTH_HTPASSWD_REALM="Registry Realm" -e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd registry:2
+
+
+############ NETWORK ###############
+
+docker network ls
+docker network inspect name/id
+docker network create --subnet 192.168.0.0/16 --gateway 192.168.1.1 some-name
+# --ip-range=192.168.3.0/24 (192.168.(0-255).0/24)
+# --label=host4network/any
+# --driver bridge/overlay
+# --opt for options available:
+#  "com.docker.network.bridge.default_bridge": "true",
+#  "com.docker.network.bridge.enable_icc": "true",
+#  "com.docker.network.bridge.enable_ip_masquerade": "true",
+#  "com.docker.network.bridge.host_binding_ipv4": "0.0.0.0",
+#  "com.docker.network.bridge.name": "docker0",
+#  "com.docker.network.driver.mtu": "1500"
+
+docker network connect/disconnect NET-NAME CONT-NAME
+# --ip=192.168.1.24
+
+docker network rm name/id
+#docker network iface change
+docker -d -b br10/iface-name
+
+Ports for overlay network
+TCP port 2377 for cluster management communications
+TCP and UDP port 7946 for communication among nodes
+UDP port 4789 for overlay network traffic
+
+######### Network drivers overview ########
+The bridge driver creates a private network internal to the host so containers on this network can communicate. 
+External access is granted by exposing ports to containers. 
+Docker secures the network by managing rules that block connectivity between different Docker networks.
+
+The built-in Docker overlay network driver radically simplifies many of the complexities in multi-host networking. 
+It is a swarm scope driver, which means that it operates across an entire Swarm
+
+The macvlan driver is the newest built-in network driver and offers several unique characteristics. 
+It’s a very lightweight driver, because rather than using any Linux bridging or port mapping, 
+it connects container interfaces directly to host interfaces. 
+Containers are addressed with routable IP addresses that are on the subnet of the external network.
+
+############ SUPPORT #############
+docker top cnt-name
+docker stats cont-name
+docker rename cont-name new-name
+#LISTEN FOR DOCKER EVENTS
+docker events
+# --since '1h'  time period
+# -f / --filter container/event/image/label/volume/network/daemon avai#lable filters
+# docker events --filter event=attach
+#SAVE
+docker save image:tag > cont-name.tar
+docker save -o / --output cont-name.tar image:tag
+docker load < cont-name.tar
+docker load -i / --input cont-name.tar
+docker save -o cont-name.tar centot:latest
+
+
+############# SWARM #################
+#Lock and unlock swarm cluster
+docker swarm update --autolock=true
+docker swarm unlock
+
+# to init the swarm 
+docker swarm init --advertise-addr IP
+# --auto-lock  # To init locked swarm cluster
+
+# to display worker token for join
+docker swarm join-token worker
+# to add another manager
+docker swarm join-token manager
+
+docker node update --availability drain NODE
+#Update a node to be unavailable for workloads (generally manger nodes)
+# to revert docker node update --availability active NODE
+docker service update --force
+#redistribute the load on all workers
+
+#list all nodes that are in the swarm
+docker node ls
+
+#Create container service in the swarm
+docker service create --name NAME -p 80:80 --replicas 4 IMAGE-NAME
+# --mode global/replicated
+# --mount source=VOL-NAME, target=/INTERNAL-MOUNT    ## Volume mount for service (docker volume must be created)
+#Global mode service - it runs the application across all nodes , loose the control of replica number
+# --hostname="{{.Node.ID}}={{.Service.Name}}"  # to specify the hostname based on templates
+# --constraint 'node.labels.mynode == testnode'
+
+docker service update --replicas 3 SERV-NAME
+# Two types of limits (limits - soft , reservations - hard)
+# --limi-cpu=1 --reserve-cpu=2
+# --limit-memory=128m --reserve-memory=256m
+docker service scale SERV_NAME=5 SERV2_NAME=3
+# to increase or decrease replicas in more than 1 service
+
+#add label to nodes that can be used lated for service constraints
+docker node update --label-add mynode=testnode NODE-ID
+
+docker service logs SERV_NAME
+
+#list all services
+docker service ls
+
+#list all processes in a service
+docker service ps SRV-NAME
+
+For full swarm backup on the manager all docker procs must be stoped on all nodes
+#then backup of /var/lib/docker/swarm can be generated directly
+# For restoration after untar swarm dir and start docker you must force new cluster with
+#docker swarm init --force-new-cluster
+
+
+############## Docker Compose ##############
+Compose is a tool for defining and running multi-container Docker applications. 
+With Compose, you use a YAML file to configure your application’s services. 
+Then, with a single command, you create and start all the services from your configuration.
+yum install epel-release
+pip install docker-compose
+
+docker compose is working with yaml files 
+example:
+
+version: '3'
+services:
+  apiweb1:
+    image: myapache:v1
+    build: .
+    ports:
+    - "81:80"
+  apiweb2:
+    image: myapache:v1
+    ports:
+    - "82:80"
+  load-balancer:
+    image: nginx:latest
+    ports:
+    - "80:80"
+
+to build it 
+docker-compose up -d   # the image file must be named Dockerfile
+
+#docker compose commands
+docker-compose ps
+docker-compose down
+
+In order to deploy the compose file to swarm
+docker stack deploy --compose-file FILE.yml  NAME

@@ -1,0 +1,17 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: httpd-deplo-dev
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: httpd-deplo-dev
+    spec:
+      containers:
+      - name: nginx-deplo-dev
+        image: httpd:latest
+        ports:
+        - containerPort: 80
+

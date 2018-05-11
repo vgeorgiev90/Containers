@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: testselector
+spec:
+  containers:
+  - name: select
+    image: httpd:latest
+  nodeSelector:
+    role: slave1

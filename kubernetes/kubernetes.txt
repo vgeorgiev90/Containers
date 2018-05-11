@@ -1,0 +1,218 @@
+################# Overview ###############
+
+The Kubernetes Master is a collection of three processes that run on a single node in your cluster, which is designated as the master node. 
+Those processes are: 
+kube-apiserver - main part of the cluster that answers API calls, 
+it uses etcd (distributed key value store that provides a reliable way to store data across a cluster of machines)
+kube-controller-manager 
+kube-scheduler - determines which node is going to be responsible for pods and their requisite containers
+
+Each individual non-master node in your cluster runs two processes:
+kubelet, which communicates with the Kubernetes Master.
+kube-proxy, a network proxy which reflects Kubernetes networking services on each node.
+
+Namespaces - Multiple virtual clusters backed by the same physical cluster.
+Used for large environments, provide scope for names, divide cluster resources,
+allows for multiple teams of users,allows for resource quotas,kube-system namespace(used for system pods)
+Kubernetes Volumes
+https://kubernetes.io/docs/concepts/storage/volumes/
+
+Pods - simplest unit in the cluster (group of containers)
+Deployment - group of pods distributed on 1 to n nodes.
+Services - expose deployments for connections (networking)
+Jobs - applications that run to completition
+ConfigMaps - ConfigMaps allow you to decouple configuration artifacts 
+from image content to keep containerized applications portable, they can be created
+from directory, file, or literal value
+DaemonSet - it ensures that all (or some) Nodes run a copy of a Pod. 
+As nodes are added to the cluster, Pods are added to them.
+
+############## Cluster Setup ##############
+Ports needed:
+Master-node
+6443	Kubernetes API server
+2379-2380	etcd server client API
+10250	Kubelet API
+10251	kube-scheduler
+10252	kube-controller-manager
+10255	Read-only Kubelet API
+
+Worker nodes
+10250	Kubelet API
+10255	Read-only Kubelet API
+30000-32767	NodePort Services**
+
+#swap must be disabled
+#add the kubernetes repo
+
+[kubernetes]
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+
+#disable selinux
+setenforce 0
+
+#install packages
+yum install -y kubelet kubeadm kubectl
+systemctl enable kubelet && systemctl start kubelet
+
+#Optional include entries in /etc/hosts for all servers
+modify /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+sysctl --system
+
+#Initialize the cluster
+kubeadm init --pod-network-cidr=CIDR (block for the kube network) --node-name Master-node
+#control groups driver must be the same as docker you can change it in
+#/etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+
+#Install a pod CNI(cluster network interface), for a flannel CNI(network) --pod-network-cidr=10.244.0.0/16
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/v0.9.1/Documentation/kube-flannel.yml
+
+#For worker nodes , make sure that the control groups driver specified in 
+#/etc/systemd/system/kubelet.service.d is the same as docker control groups driver
+#add the kubernetes repo and install the same packages
+
+#to run kubernetes commands as regular user
+mkdir -p $HOME/.kube
+cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+chown $(id -u):$(id -g) $HOME/.kube/config
+
+############## Security ################
+Default enctyption in kubernetes is TLS
+Kubernetes has an integrated Role-Based Access Control (RBAC)
+
+#Create a secret from a file
+kubectl create secret generic viktor --from-file=username --from-file=password
+# to display the secret (credentials are base64 encoded)
+kubectl get secret viktor -o yaml
+
+#secrets can be mounted in a volumes which pods can then use.
+Create a secret or use an existing one
+Modify your Pod definition to add a volume under spec.volumes[]. 
+Name the volume anything, and have a spec.volumes[].secret.secretName 
+field equal to the name of the secret object.
+Add a spec.containers[].volumeMounts[] to each container that needs the secret. 
+Specify spec.containers[].volumeMounts[].readOnly = true and spec.containers[].volumeMounts[].mountPath 
+to an unused directory name where you would like the secrets to appear.
+If there are multiple containers in the pod, then each container needs its own volumeMounts block, 
+but only one spec.volumes is needed per secret.
+
+Security best practices
+Ensure That Images Are Free of Vulnerabilities
+Implement Continuous Security Vulnerability Scanning – Containers might include outdated packages with known vulnerabilities (CVEs). 
+This cannot be a ‘one off’ process, as new vulnerabilities are published every day. 
+An ongoing process, where images are continuously assessed, is crucial to insure a required security posture.
+Regularly Apply Security Updates to Your Environment
+Ensure That Only Authorized Images are Used in Your Environment
+Limit Direct Access to Kubernetes Nodes
+
+
+############## Commands ################
+
+#kubectl commands
+kubectl get nodes/services/deployments/jobs/pods/namespaces
+# -o jsonpath='(.items[*].status.addresses[?{@.type=="ExternalIP"}].address}'
+# -o=yaml output format
+# -l label pair (app=nginx-viktor)
+# -n namespace  ## to list all pods in given namespace
+kubectl describe nodes/pods
+kubectl describe replicationcontroller
+
+#You can create labels in runtime
+kubectl label pod POD-NAME test=True
+#--overwrite
+
+kubectl expose deployment dep-name --type="NodePort/LoadBalancer"
+# --external-ip=172.31.101.153
+
+
+kubectl run name --image=latest123/apache
+#will create deployment
+# --replicas=number
+# --labels=key=value (app=apache) , separeted
+# --port 
+kubectl exec pod-name -c cont-name -- command (/bin/bash)
+# -c container name
+# -it
+kubectl autoscale deployment dep-name
+# --min=num
+# --max=num
+# --cpu-percent= %%
+kubectl scale --current-replicas=2 --replicas=4 deployment/dep-name
+export TERM=xterm # enviroment variables in containers
+
+#Update deployment (rollout)
+kubectl set image deployment/deploy-name nginx=nginx:1.8
+#Undo the previous rollout
+kubectl rollout undo deployment deploy-name
+#kubectl rollout history deployment deploy-name  # to check specific points
+kubectl rollout history deployment deploy-name --revision=x
+
+
+kubectl apply -f file.yaml (nginx-update)
+kubectl create -f ./file.yaml
+# -f path to file
+# -l selector (app=name)
+
+kubectl logs pod-name
+# --since=1d/h/m
+# -f same as tail -f
+# -c CID (cont-id)
+
+#busybox for testing
+kubectl run busybox --image=busybox --restart=Never --tty -i --generator=run-pod/v1
+kubectl delete pod busybox
+kubectl port-forward pod-name :80/port
+
+kubectl api-versions
+
+
+#To prevent pods to be scheduled on node 
+kubectl drain node-name 
+# --ignore-daemonsets
+kubectl uncordon node-name   # to get it back in the cluster for scheduling.
+
+#switch the operating namespace
+kubectl config use-context name-of-custom-namespace
+
+#Configmap create
+kubectl create configmap NAME --from-literal=school=LinuxAcademy
+# --from-file
+# --from-directory
+
+Kubernetes cheatsheet
+https://kubernetes.io/docs/reference/kubectl/cheatsheet/
+
+
+#Namespace creation
+1 - create the namespace 
+{
+  "kind": "Namespace",
+  "apiVersion": "v1",
+  "metadata": {
+     "name": "production",
+     "labels": {
+        "name": "production"
+     }
+  }
+}
+
+2 - kubectl config view
+# to check for cluster and user
+- context:
+    cluster: kubernetes
+    user: kubernetes-admin
+  name: kubernetes-admin@kubernetes
+
+3 - The next step is to define a context for the kubectl client to work in each namespace
+kubectl config set-context prod --namespace=production --cluster=kubernetes --user=kubernetes-admin@kubernetes
+
+Limiting Namespace resourcequota
+1 - create resource quota and apply it
+kubectl create -f /path/to/quota/yaml/file --namespace NAMESPACE
+
