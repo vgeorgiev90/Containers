@@ -31,7 +31,7 @@ Example:
 /etc/docker/daemon.json
 
 {
-  "storage-river": "devicemapper"
+  "storage-driver": "devicemapper"
 }
 
 ################### Configure logging driver ##########
