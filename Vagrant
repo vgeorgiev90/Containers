@@ -1,0 +1,92 @@
+################## Overview ################
+Vagrant is an open-source software product for building and maintaining portable virtual software development environments, e.g. 
+for VirtualBox, Hyper-V, Docker containers, VMware, and AWS which try to simplify software configuration 
+management of virtualizations in order to increase development productivity. 
+Vagrant can handle the entire lifecycle of development machines, it can 
+suspend , halt, resume , destroy them etc. It can also bootstrap the machines.
+
+#example to launch a machine with downloaded vagrantfile from the official website
+vagrant init precise64 http://files.vagrantup.com/precise64.box
+vagrant up
+
+#to destroy it
+vagrant destroy
+#to connect to the machine 
+vagrant ssh
+
+vagrant status
+vagrant box list
+
+#To create a new package box
+vagrant package --base VM-name
+
+############# Vagrantfiles ##########
+## Provisioning of the machines can be done through shell, chef or puppet
+
+#Example
+
+Vagrant.configure("2") do |config|
+
+  # For a complete reference, please see the online documentation at
+  # https://docs.vagrantup.com.
+
+  #You can search for boxes at https://vagrantcloud.com/search.
+  config.vm.box = "hashicorp/precise64"
+
+  #config.vm.box_url = "http://files.vagrantup.com/precise64.box"
+
+  # config.vm.network "forwarded_port", guest: 80, host: 8080
+
+  # config.vm.network "forwarded_port", guest: 80, host: 8080, host_ip: "127.0.0.1"
+
+  # config.vm.network "private_network", ip: "192.168.33.10"
+  
+    config.vm.network "public_network"
+
+  # config.vm.synced_folder "../data", "/vagrant_data"
+
+   config.vm.provider "virtualbox" do |vb|
+  #   # Display the VirtualBox GUI when booting the machine
+  #   vb.gui = true
+     vb.name = "vagrant-machine-ubuntu"
+  #   # Customize the amount of memory on the VM:
+     vb.memory = "1024"
+   end
+
+  # config.vm.provision "shell", inline: <<-SHELL
+  #   apt-get update
+  #   apt-get install -y apache2
+  # SHELL
+end
+
+##### puppet provisioning of two servers #####
+
+Vagrant.configure(2) do |config|
+config.vm.box = "centos/7"
+config.vm.provider "virtualbox" do |vb|
+  vb.memory = "1024"
+end
+
+#Web server
+  config.vm.define "web" do |web|
+    web.vm.hostname = "web-server"
+    web.vm.box = "centos/7"
+    web.vm.network "public_network"
+    web.vm.provision "puppet" do |puppet|
+      puppet.manifests_path = "manifests"   # manifests directory
+      puppet.manifest_file = "web.pp"
+	end
+  end
+
+#Db server
+  config.vm.define "db" do |db|
+    db.vm.hostname = "db-server"
+    db.vm.box = "centos/7"
+    db.vm.network "public_network"
+    db.vm.provision "puppet" do |puppet|
+        puppet.manifests_path = "manifests"
+	    puppet.manifest_file = "db.pp"
+    end
+  end
+
+end
