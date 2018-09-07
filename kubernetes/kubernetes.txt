@@ -71,7 +71,7 @@ kubeadm init --pod-network-cidr=CIDR (block for the kube network) --node-name Ma
 #/etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 
 #Install a pod CNI(cluster network interface), for a flannel CNI(network) --pod-network-cidr=10.244.0.0/16
-kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/v0.9.1/Documentation/kube-flannel.yml
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 
 #For worker nodes , make sure that the control groups driver specified in 
 #/etc/systemd/system/kubelet.service.d is the same as docker control groups driver
