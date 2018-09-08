@@ -67,6 +67,7 @@ sysctl --system
 
 #Initialize the cluster
 kubeadm init --pod-network-cidr=CIDR (block for the kube network) --node-name Master-node
+#For flannel network use cidr --pod-network-cidr=10.244.0.0/16
 #control groups driver must be the same as docker you can change it in
 #/etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 
