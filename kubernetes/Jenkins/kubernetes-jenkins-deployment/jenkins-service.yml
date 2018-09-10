@@ -1,0 +1,36 @@
+
+### Service for jenkins UI
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: jenkins-ui-service
+spec:
+  type: NodePort
+  selector:
+    app: jenkins-deploy
+  ports:
+  - name: ui-port
+    protocol: TCP
+    port: 8080
+    targetPort: 8080
+    nodePort: 31000
+
+---
+
+### Service for jenkins JNLP
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: jenkins-jnlp-service
+spec:
+  type: NodePort
+  selector:
+    app: jenkins-deploy
+  ports:
+  - name: jnlp-port
+    protocol: TCP
+    port: 50000
+    targetPort: 50000
+    nodePort: 32000

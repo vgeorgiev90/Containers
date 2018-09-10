@@ -1,0 +1,69 @@
+pipeline {
+    agent {
+        kubernetes {
+            label 'jenkins-slave'
+            yaml """
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: slave
+spec:
+  shareProcessNamespace: true
+  containers:
+  - name: worker-nginx
+    image: nginx:latest
+    ports:
+    - containerPort: 80
+    command: 
+    - cat
+    tty: true
+    volumeMounts:
+      - name: nginx-vhost
+        mountPath: /etc/nginx/conf.d/vhost.conf
+
+  - name: worker-mysql
+    image: mysql:latest
+    env:
+    - name: MYSQL_ROOT_PASSWORD
+      value: "viktor123"
+    ports:
+    - containerPort: 3306
+    
+  volumes:
+    - name: nginx-vhost
+      hostPath:
+        path: /root/files/vhost.conf
+"""
+        }
+    }
+  stages {
+      stage('Install packages') {
+          steps {
+              container('worker-nginx') {
+                  sh "echo 'nameserver 8.8.8.8' >> /etc/resolv.conf"
+                  sh "apt-get update -y && apt-get install wget php7.0-fpm php7.0-mysql php7.0-mbstring php7.0-gd php7.0-intl php7.0-xml php7.0-mcrypt -y"
+                  sh "mkdir /run/php"
+                  sh "sed -i 's/user = www-data/user = nginx/' /etc/php/7.0/fpm/pool.d/www.conf"
+                  sh "sed -i 's/group = www-data/group = nginx/' /etc/php/7.0/fpm/pool.d/www.conf"
+                  sh "/usr/sbin/php-fpm7.0"
+                  sh "/usr/sbin/nginx"
+              }
+          }
+      }
+      
+      stage('Get wordpress') {
+          steps {
+              container('worker-nginx') {
+                  sh "wget https://wordpress.org/latest.tar.gz -P /usr/share/nginx/html"
+                  sh "tar -xzf /usr/share/nginx/html/latest.tar.gz -C /usr/share/nginx/html"
+                  sh "mv /usr/share/nginx/html/wordpress/* /usr/share/nginx/html/."
+                  sh "rm /usr/share/nginx/html/wordpress -rf"
+                  sh "cp /usr/share/nginx/html/wp-config-sample.php /usr/share/nginx/html/wp-config.php"
+                  sh "chown -R nginx:nginx /usr/share/nginx/html"
+              }
+          }
+      }
+      
+  }  
+}

@@ -1,0 +1,36 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: jenkins-deploy
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: jenkins-deploy
+    spec:
+      serviceAccount: jenkins
+      automountServiceAccountToken: true
+      containers:
+      - name: jenkins-deploy
+        image: jenkins/master:v3
+        env:
+          - name: JAVA_OPTS
+            value: -Djenkins.install.runSetupWizard=false
+        ports:
+        - containerPort: 8080
+        - containerPort: 50000
+        volumeMounts:
+        - mountPath: /var/jenkins_home
+          name: jenkins
+      volumes:
+      - name: jenkins
+        hostPath:
+          path: /var/lib/jenkins
+          type: Directory
+      nodeSelector:
+        jenkins: master
+      tolerations:
+      - key: "node-role.kubernetes.io/master"
+        operator: "Exists"
+        effect: "NoSchedule"
