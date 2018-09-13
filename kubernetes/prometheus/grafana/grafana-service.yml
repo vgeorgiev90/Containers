@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: 2018-09-12T12:24:19Z
+  labels:
+    k8s-app: grafana
+    task: monitoring
+  name: grafana
+  namespace: monitoring
+  resourceVersion: "31569"
+  selfLink: /api/v1/namespaces/monitoring/services/grafana
+  uid: c5efc58c-b686-11e8-a709-0a4059c0ff74
+spec:
+  clusterIP: 10.106.115.214
+  externalTrafficPolicy: Cluster
+  ports:
+  - nodePort: 31156
+    port: 3000
+    protocol: TCP
+    targetPort: 3000
+  selector:
+    k8s-app: grafana
+    task: monitoring
+  sessionAffinity: None
+  type: NodePort
+status:
+  loadBalancer: {}
+
