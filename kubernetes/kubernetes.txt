@@ -237,4 +237,28 @@ backend kubernetes-masters
     option tcp-check
     server kube-master1 10.0.11.150:6443 fall 3 rise 2
     server kube-master2 10.0.11.151:6443 fall 3 rise 2
+    
+## For kubernetes dashboard with !!! ADMIN !!! privileges
+    
+#Access url
+http://10.0.11.150:443/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/
+    
+#dashboard admin role
 
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: kubernetes-dashboard
+  labels:
+    k8s-app: kubernetes-dashboard
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: kubernetes-dashboard
+  namespace: kube-system
+  
+  #kube proxy
+  kubectl proxy --address="10.0.11.150" -p 443 --accept-hosts='^*$'
