@@ -217,3 +217,24 @@ Limiting Namespace resourcequota
 1 - create resource quota and apply it
 kubectl create -f /path/to/quota/yaml/file --namespace NAMESPACE
 
+
+### For multi master set up
+https://kubernetes.io/docs/setup/independent/high-availability/
+
+
+#Ha-proxy config
+
+frontend kubernetes
+    bind 10.0.11.155:6443
+    option tcplog
+    mode tcp
+    default_backend kubernetes-masters
+
+
+backend kubernetes-masters
+    mode tcp
+    balance roundrobin
+    option tcp-check
+    server kube-master1 10.0.11.150:6443 fall 3 rise 2
+    server kube-master2 10.0.11.151:6443 fall 3 rise 2
+
