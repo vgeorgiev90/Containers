@@ -1,0 +1,33 @@
+piVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: slow
+provisioner: kubernetes.io/glusterfs
+parameters:
+  resturl: "http://127.0.0.1:8081"                   ### heketi server api
+  clusterid: "630372ccdc720a92c681fb928f27b53f"      ### heketi cluster id
+  volumetype: "replicate:3"                          ### Only if you have 3 gluster nodes
+  
+ 
+ ### heketi topology example
+ 
+#{
+#  "clusters": [
+#   {
+#     "nodes": [
+#       { "node": {
+#           "hostnames": { "manage": ["10.0.11.165"], "storage": ["10.0.11.165"], "zone": 1  },
+#           "zone": 1
+#          },
+#         "devices": [{"name": "/dev/sdb1"}]
+#       },
+#       { "node": {
+#           "hostnames": { "manage": ["10.0.11.166"], "storage": ["10.0.11.166"], "zone": 1  },
+#           "zone": 2
+#          },
+#         "devices": [{"name": "/dev/sdb1"}]
+#       }
+#     ]
+#     }
+#   ]
+#}
