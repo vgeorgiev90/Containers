@@ -1,4 +1,4 @@
-piVersion: v1
+apiVersion: v1
 kind: Pod
 metadata:
   name: mysql-pod
@@ -21,7 +21,7 @@ spec:
         - containerPort: 3306
       volumeMounts:
       - name: mysql-data
-        path: /var/lib/mysql
+        mountPath: /var/lib/mysql
   volumes:
   - name: mysql-data
     persistentVolumeClaim:
