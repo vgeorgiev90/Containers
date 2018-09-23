@@ -1,19 +1,38 @@
 apiVersion: v1
 kind: ReplicationController
 metadata:
-  name: replicatest
+  name: viktor-wordpress-web
 spec:
   replicas: 3
   selector:
-    app: httpd
+    app: viktor-wordpress-web
   template:
     metadata:
-      name: httpd
+      name: viktor-wordpress-web
       labels:
-        app: httpd
+        app: viktor-wordpress-web
     spec:
       containers:
-      - name: httpdcont
-        image: httpd:latest
+      - name: wordpress-web
+        image: viktor90/nginx:php
         ports:
         - containerPort: 80
+        volumeMounts:
+        - name: scripts
+          mountPath: /mnt
+        - name: web-data
+          mountPath: /usr/share/nginx/html
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: scripts
+        persistentVolumeClaim:
+          claimName: web-pod-scripts
+      - name: web-data
+        persistentVolumeClaim:
+          claimName: viktor-wordpress-web-data
