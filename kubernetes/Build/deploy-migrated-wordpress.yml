@@ -1,0 +1,145 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: migrated-mysql-data
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: migrated-web-data
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: wordpress-migrated
+spec:
+  replicas: 3
+  selector:
+    app: wordpress-migrated
+  template:
+    metadata:
+      name: wordpress-migrated
+      labels:
+        app: wordpress-migrated
+    spec:
+      containers:
+      - name: wordpress-web
+        image: viktor90/nginx:php
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: scripts
+          mountPath: /mnt
+        - name: web-data
+          mountPath: /usr/share/nginx/html
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: scripts
+        persistentVolumeClaim:
+          claimName: web-pod-scripts
+      - name: web-data
+        persistentVolumeClaim:
+          claimName: migrated-web-data
+
+---
+
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: migrated-mysql
+spec:
+  replicas: 1
+  selector:
+    app: migrated-mysql
+  template:
+    metadata:
+      name: migrated-mysql
+      labels:
+        app: migrated-mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:5.6
+        ports:
+        - containerPort: 3306
+        env:
+        - name: "MYSQL_USER"
+          value: "viktor"
+        - name: "MYSQL_PASSWORD"
+          value: "viktor123"
+        - name: "MYSQL_DATABASE"
+          value: "viktor"
+        - name: "MYSQL_ROOT_PASSWORD"
+          value: "viktor123"
+        volumeMounts:
+        - name: mysql-data
+          mountPath: /var/lib/mysql
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "756Mi"
+            cpu: "500m"
+      volumes:
+      - name: mysql-data
+        persistentVolumeClaim:
+          claimName: migrated-mysql-data
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: wordpress-migrated
+  name: wordpress-migrated
+  namespace: default
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: wordpress-migrated
+  type: ClusterIP
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: migrated-mysql
+  name: migrated-mysql
+  namespace: default
+spec:
+  ports:
+  - port: 3306
+    protocol: TCP
+    targetPort: 3306
+  selector:
+    app: migrated-mysql
+  type: ClusterIP
