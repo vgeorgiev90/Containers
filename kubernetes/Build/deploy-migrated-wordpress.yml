@@ -144,7 +144,7 @@ spec:
     app: migrated-mysql
   type: ClusterIP
   
-  ---
+---
   
 apiVersion: extensions/v1beta1
 kind: Ingress
