@@ -143,3 +143,21 @@ spec:
   selector:
     app: migrated-mysql
   type: ClusterIP
+  
+  ---
+  
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: testingress
+  annotations:
+    ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: viktor.example
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: wordpress-migrated
+          servicePort: 80
