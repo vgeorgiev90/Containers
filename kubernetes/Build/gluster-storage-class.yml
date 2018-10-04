@@ -1,4 +1,4 @@
-piVersion: storage.k8s.io/v1
+apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: slow
@@ -12,6 +12,8 @@ parameters:
   
  
  ### heketi topology example
+ 
+ #heketi-cli topology load --json=/path/to/topology
  
 #{
 #  "clusters": [
