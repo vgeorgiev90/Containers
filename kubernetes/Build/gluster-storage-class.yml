@@ -10,7 +10,10 @@ parameters:
   clusterid: "630372ccdc720a92c681fb928f27b53f"      ### heketi cluster id
   volumetype: "replicate:3"                          ### Only if you have 3 gluster nodes
   
- 
+## To change it to default storage class
+# kubectl patch storageclass glusterfs -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+
+
  ### heketi topology example
  
  #heketi-cli topology load --json=/path/to/topology
