@@ -8,3 +8,7 @@ spec:
   resources:
     requests:
       storage: 1Gi
+  storageClassName: ""                ### Do not match any storage classes
+  selector:                           ### Select volume based on labels
+    matchLabels:
+      app: elastic
