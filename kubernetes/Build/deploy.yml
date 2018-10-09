@@ -1,42 +1,17 @@
 apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: migrated-mysql-data
-spec:
-  accessModes:
-  - ReadWriteMany
-  resources:
-    requests:
-      storage: 1Gi
-
----
-
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: migrated-web-data
-spec:
-  accessModes:
-  - ReadWriteMany
-  resources:
-    requests:
-      storage: 1Gi
-
----
-
-apiVersion: v1
 kind: ReplicationController
 metadata:
-  name: wordpress-migrated
+  name: ${DEPLOY_WEB}
+  namespace: deploy
 spec:
   replicas: 3
   selector:
-    app: wordpress-migrated
+    app: ${DEPLOY_WEB}
   template:
     metadata:
-      name: wordpress-migrated
+      name: ${DEPLOY_WEB}
       labels:
-        app: wordpress-migrated
+        app: ${DEPLOY_WEB}
     spec:
       containers:
       - name: wordpress-web
@@ -46,7 +21,7 @@ spec:
         volumeMounts:
         - name: scripts
           mountPath: /mnt
-        - name: web-data
+        - name: ${DEPLOY_WEB}
           mountPath: /usr/share/nginx/html
         resources:
           requests:
@@ -59,25 +34,33 @@ spec:
       - name: scripts
         persistentVolumeClaim:
           claimName: web-pod-scripts
-      - name: web-data
-        persistentVolumeClaim:
-          claimName: migrated-web-data
+  volumeClaimTemplates:
+  - metadata:
+      name: ${DEPLOY_WEB}
+    spec:
+      accessModes:
+        - ReadWriteMany
+      storageClassName: glusterfs
+      resources:
+        requests:
+          storage: 5Gi
 
 ---
 
 apiVersion: v1
 kind: ReplicationController
 metadata:
-  name: migrated-mysql
+  name: ${DEPLOY_MYSQL}
+  namespace: deploy
 spec:
   replicas: 1
   selector:
-    app: migrated-mysql
+    app: ${DEPLOY_MYSQL}
   template:
     metadata:
-      name: migrated-mysql
+      name: ${DEPLOY_MYSQL}
       labels:
-        app: migrated-mysql
+        app: ${DEPLOY_MYSQL}
     spec:
       containers:
       - name: mysql
@@ -94,7 +77,7 @@ spec:
         - name: "MYSQL_ROOT_PASSWORD"
           value: "viktor123"
         volumeMounts:
-        - name: mysql-data
+        - name: ${DEPLOY_MYSQL}
           mountPath: /var/lib/mysql
         resources:
           requests:
@@ -103,10 +86,17 @@ spec:
           limits:
             memory: "756Mi"
             cpu: "500m"
-      volumes:
-      - name: mysql-data
-        persistentVolumeClaim:
-          claimName: migrated-mysql-data
+  volumeClaimTemplates:
+  - metadata:
+      name: ${DEPLOY_MYSQL}
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      storageClassName: glusterfs
+      resources:
+        requests:
+          storage: 5Gi
+
 
 ---
 
@@ -114,16 +104,16 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: wordpress-migrated
-  name: wordpress-migrated
-  namespace: default
+    app: ${DEPLOY_WEB}
+  name: ${DEPLOY_WEB}
+  namespace: deploy
 spec:
   ports:
   - port: 80
     protocol: TCP
     targetPort: 80
   selector:
-    app: wordpress-migrated
+    app: ${DEPLOY_WEB}
   type: ClusterIP
 
 ---
@@ -132,32 +122,34 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: migrated-mysql
-  name: migrated-mysql
-  namespace: default
+    app: ${DEPLOY_MYSQL}
+  name: ${DEPLOY_MYSQL}
+  namespace: deploy
 spec:
   ports:
   - port: 3306
     protocol: TCP
     targetPort: 3306
   selector:
-    app: migrated-mysql
+    app: ${DEPLOY_MYSQL}
   type: ClusterIP
-  
+
 ---
-  
+
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: testingress
+  name: ${DEPLOY_WEB}
+  namespace: deploy
   annotations:
     ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
-  - host: viktor.example
+  - host: ${DOMAIN}
     http:
       paths:
       - path: /
         backend:
-          serviceName: wordpress-migrated
+          serviceName: ${DEPLOY_WEB}
           servicePort: 80
+
