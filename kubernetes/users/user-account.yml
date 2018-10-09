@@ -1,0 +1,47 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: viktor-deploy
+  namespace: deploy
+rules:
+  - apiGroups:
+      - ""
+      - extensions
+      - apps
+    resources:
+      - deployments
+      - replicasets
+      - pods
+      - services
+      - ingress
+      - replicationcontroller
+    verbs:
+      - "*"
+
+
+---
+
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: viktor-deploy
+  namespace: deploy
+roleRef:
+  apiGroup: ""
+  kind: Role
+  name: viktor-deploy
+subjects:
+  - apiGroup: ""
+    kind: User
+    name: viktor
+
+
+
+## create ns      kubectl create namespace office
+## gen pkey       openssl genrsa -out employee.key 2048
+## create csr     openssl req -new -key employee.key -out employee.csr -subj "/CN=employee/O=bitnami"
+## sign with CA   openssl x509 -req -in employee.csr -CA CA_LOCATION/ca.crt -CAkey CA_LOCATION/ca.key -CAcreateserial -out employee.crt -days 500
+## create creds   kubectl config set-credentials employee --client-certificate=/home/employee/.certs/employee.crt  --client-key=/home/employee/.certs/employee.key 
+## set context    kubectl config set-context employee-context --cluster=minikube --namespace=office --user=employee
+## create the role and rolebinding
