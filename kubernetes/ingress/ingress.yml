@@ -29,3 +29,5 @@ spec:
 ## Documentation and installation
 ## https://kubernetes.github.io/ingress-nginx/deploy/
 
+## For HA Proxy ingress controller see docs
+## https://github.com/jcmoraisjr/haproxy-ingress
