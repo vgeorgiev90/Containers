@@ -51,6 +51,3 @@ EOF
 wp core install --url=${domain} --title=Example --admin_user=admin --admin_password='P@$$word' --admin_email=${admin_email} --path=/usr/share/nginx/html --allow-root
 
 chown -R nginx:nginx /usr/share/nginx/html
-
-ln -s /usr/share/nginx/html/example-com.conf /etc/nginx/conf.d/example-com.conf
-
