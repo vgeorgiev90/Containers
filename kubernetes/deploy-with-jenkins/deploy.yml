@@ -63,11 +63,11 @@ spec:
         - containerPort: 3306
         env:
         - name: "MYSQL_USER"
-          value: "viktor"
+          value: ${MYSQL_USER}
         - name: "MYSQL_PASSWORD"
-          value: "viktor123"
+          value: ${MYSQL_PASS}
         - name: "MYSQL_DATABASE"
-          value: "viktor"
+          value: ${MYSQL_DB}
         - name: "MYSQL_ROOT_PASSWORD"
           value: "viktor123"
         volumeMounts:
