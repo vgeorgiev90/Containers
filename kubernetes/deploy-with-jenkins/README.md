@@ -8,5 +8,5 @@
 ##   - post: trigger param build on other project (kube-deploy) with current build params
 ## 2 - job: kube-deploy
 ##   - params: deploy_web , deploy_mysql , domain, mysql_user, mysql_pass, mysql_db
-##   - exec: deploy to kubernetes (template deploy.yml)
+##   - exec: deploy to kubernetes (template deploy-wordpress.yml)
 ##   - post: pre-warm.sh $deploy_web $deploy_mysql $mysql_db $mysql_user $mysql_pass $domain
