@@ -265,3 +265,8 @@ subjects:
   
   #kube proxy
   kubectl proxy --address="10.0.11.150" -p 443 --accept-hosts='^*$'
+  
+  
+ ## Usefull resources by weave
+ https://www.weave.works/docs/scope/latest/installing/
+ #weave-scope
