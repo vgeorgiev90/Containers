@@ -4,16 +4,16 @@
 ## create secret in the correct namespace
 ## kubectl create secret generic basic-auth --from-file=auth --namnespace example
 
+## For k8s dashboard ingress add the following also
+## nginx.ingress.kubernetes.io/secure-backends: "true"
+
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: ingress-with-auth
   annotations:
-    # type of authentication
     nginx.ingress.kubernetes.io/auth-type: basic
-    # name of the secret that contains the user/password definitions
     nginx.ingress.kubernetes.io/auth-secret: basic-auth
-    # message to display with an appropriate context why the authentication is required
     nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required'
 spec:
   rules:
