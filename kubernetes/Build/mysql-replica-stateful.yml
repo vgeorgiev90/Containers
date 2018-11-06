@@ -59,6 +59,7 @@ spec:
         image: mysql:5.6
         env:
         - name: "MYSQL_ROOT_PASSWORD"
+          #value: "viktor123"
           valueFrom:
             secretKeyRef:
               name: mysql-secret
@@ -70,9 +71,27 @@ spec:
           mountPath: /var/lib/mysql
         - name: configs
           mountPath: /etc/mysql/conf.d
+        - name: shared-storage
+          mountPath: /mnt
+        lifecycle:
+          postStart:
+            exec:
+              command:
+              - bash
+              - "-c"
+              - |
+                sleep 60
+                echo "[client]" > /root/.my.cnf
+                echo "user=root" >> /root/.my.cnf
+                echo "password=${MYSQL_ROOT_PASSWORD}" >> /root/.my.cnf
+                echo "GRANT REPLICATION SLAVE ON *.* TO replication@'%' IDENTIFIED BY 'replicator';" | mysql
+                echo "flush privileges" | mysql
       volumes:
       - name: configs
         emptyDir: {}
+      - name: shared-storage
+        persistentVolumeClaim:
+          claimName: shared-storage
   volumeClaimTemplates:
   - metadata:
       name: mysql-data
