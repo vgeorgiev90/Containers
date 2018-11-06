@@ -1,0 +1,47 @@
+#General guidance
+
+1. Verify that all your security settings are properly enforced
+2. Always use the latest stable k8s version
+3. Audit the OS , container runtime and k8s configuration (with tools like: kube-auto-analyzer, kube-bench)
+4. Log everything to a location outside the cluster
+
+#Image security
+
+1. Use private registries and restrict public usage
+2. Scan all images for vulnerabilities (coreOS clair or Atomic Scan)
+3. Decide which types/severity of issues should prevent deployments
+4. Maintain standard base images and ensure all workloads use them
+5. DO NOT run containers as the root user
+
+#K8s components security
+
+1. Api Server - authorization-mode=Node,RBAC
+2. Ensure all services are protected by TLS
+3. Ensure kubelet protects its API via authorization-mode=Webhook
+4. Ensure kube-dashboard uses restrictive RBAC role and v1.7+
+5. Monitor RBAC policy failures
+6. Remove default service account permissions
+
+#Network security
+1. Filter access to any cloud provider metadata (APIs,URL , IAM permissions etc.)
+2. Use CNI plugin that filters ingress/egress pod traffic
+  a. Properly label all pods
+  b. Isolate all wordloads from each other
+  c. Prevent workloads from egressing to internet, Pod IP space, Node IP space, and/or other internal networks
+  d. restrict traffic comming into kube-system namespace except kube-dns
+3. Consider a service mesh
+
+#Workload containment and security
+1. Namespace per tenant
+2. default network deny inbound on all namespaces
+3. Assign CPU/RAM limits to all containers
+4. Set automountServiceAccountToken: false  on pods who do not need tokens
+5. Use PodSecurityPolicy to enforce container restrictions and protect the node
+6. Implement container-aware malicious activity detection
+
+#Misc security
+1. Collect logs from all containers , especially the RBAC access/deny logs
+2. Encrypt the content of etcd , and run etcd on dedicated nodes
+3. Separate cloud accounts,VPC/resource groups for cloud providers
+4. Separate clusters for dev/test and production environment
+5. Separate node pools for different tenants
