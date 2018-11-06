@@ -1,3 +1,4 @@
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -31,6 +32,28 @@ spec:
       labels:
         app: mysql-replica
     spec:
+      initContainers:
+      - name: init-replication
+        image: mysql:5.6
+        command:
+        - bash
+        - "-c"
+        - |
+          id=`cat /dev/urandom | tr -dc '1-9' | fold -w 2 | head -n 1`
+          auto_inc_off=`cat /dev/urandom | tr -dc '1-9' | fold -w 1 | head -n 1`
+          echo "[mysqld]" > /etc/mysql/conf.d/master.cnf
+          echo "server-id = ${id}" >> /etc/mysql/conf.d/master.cnf
+          echo "log_bin = /var/log/mysql/mysql-bin.log" >> /etc/mysql/conf.d/master.cnf
+          echo "log_bin_index =/var/log/mysql/mysql-bin.log.index" >> /etc/mysql/conf.d/master.cnf
+          echo "relay_log = /var/log/mysql/mysql-relay-bin" >> /etc/mysql/conf.d/master.cnf
+          echo "relay_log_index = /var/log/mysql/mysql-relay-bin.index" >> /etc/mysql/conf.d/master.cnf
+          echo "auto_increment_increment = 2" >> /etc/mysql/conf.d/master.cnf
+          echo "auto-increment-offset = ${auto_inc_off}" >> /etc/mysql/conf.d/master.cnf
+          echo "binlog-ignore-db = mysql" >> /etc/mysql/conf.d/master.cnf
+          echo "replicate-ignore-db = mysql" >> /etc/mysql/conf.d/master.cnf
+        volumeMounts:
+        - name: configs
+          mountPath: /etc/mysql/conf.d
       containers:
       - name: mysql
         image: mysql:5.6
@@ -45,6 +68,11 @@ spec:
         volumeMounts:
         - name: mysql-data
           mountPath: /var/lib/mysql
+        - name: configs
+          mountPath: /etc/mysql/conf.d
+      volumes:
+      - name: configs
+        emptyDir: {}
   volumeClaimTemplates:
   - metadata:
       name: mysql-data
