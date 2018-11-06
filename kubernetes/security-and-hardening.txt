@@ -45,3 +45,7 @@
 3. Separate cloud accounts,VPC/resource groups for cloud providers
 4. Separate clusters for dev/test and production environment
 5. Separate node pools for different tenants
+
+
+## Auditing kubernetes cluster components
+# https://github.com/Shopify/kubeaudit#audits
