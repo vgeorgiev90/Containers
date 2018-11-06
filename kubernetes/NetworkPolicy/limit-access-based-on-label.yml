@@ -7,9 +7,14 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      run: nginx
+      app: mysql
   ingress:
   - from:
     - podSelector:
         matchLabels:
-          access: "true"
+          app: nginx
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: nginx
