@@ -224,8 +224,13 @@ kubectl create -f /path/to/quota/yaml/file --namespace NAMESPACE
 ### For multi master set up
 https://kubernetes.io/docs/setup/independent/high-availability/
 
+####### Upgrade cluster with kubeadm ####
+kubeadm upgrade plan
+kubeadm upgrade apply VERSION
 
-#Ha-proxy config
+
+
+######## Ha-proxy config ######
 
 frontend kubernetes
     bind 10.0.11.155:6443
