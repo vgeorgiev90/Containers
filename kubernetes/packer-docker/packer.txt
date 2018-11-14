@@ -1,0 +1,10 @@
+## Reff: https://www.packer.io/docs/index.html
+
+## validate json config
+packer validate file.json
+
+## build json config with custom vars which are defined already
+packer build --var 'var=value' --var 'var2=value' file.json
+
+## inspect file
+packer inspect file.json

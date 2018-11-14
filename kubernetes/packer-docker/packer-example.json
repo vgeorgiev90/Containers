@@ -1,0 +1,41 @@
+{
+ "variables": {
+    "repository": "viktor90/packer-build",
+    "tag": "v1"
+  },
+  "builders": [{
+    "type": "docker",
+    "author": "v.georgiev90@abv.bg",
+    "image": "nginx:latest",
+    "commit": true,
+    "changes": [ "EXPOSE 80" ]
+  }],
+  "provisioners" : [
+   {
+     "type": "shell",
+     "inline": [
+       "apt-get update && apt-get install vim wget curl telnet -y",
+       "rm /usr/share/nginx/html/* -rf",
+       "touch /usr/share/nginx/html/index.html && echo 'Kvo stava' > /usr/share/nginx/html/index.html",
+       "chown -R nginx:nginx /usr/share/nginx/html"
+     ]
+   }
+  ],
+
+  "post-processors": [
+   [
+   {
+     "type": "docker-tag",
+     "repository": "{{user `repository`}}",
+     "tag": "{{ user `tag` }}"
+   },
+   {
+     "type": "docker-push",
+     "login": true,
+     "login_username": "login-name",
+     "login_password": "login-pass"
+   }
+   ]
+  ]
+
+}
