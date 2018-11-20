@@ -1,0 +1,26 @@
+apiVersion: extensions/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: example
+spec:
+  privileged: false
+  runAsUser:
+    rule: MustRunAsNonRoot
+  seLinux:
+    rule: RunAsAny
+  fsGroup:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  volumes:
+  - 'nfs'
+  hostPorts:
+  - min: 100
+    max: 100
+
+
+# Briefly, this pod security policy implements the following security rules:
+#  Disallow containers running in privileged mode
+#  Disallow containers that require root privileges
+#  Disallow containers that access volumes apart from NFS volumes
+#  Disallow containers that access host ports apart from port 100

@@ -1,0 +1,39 @@
+When a PodSecurityPolicy resource is created, it does nothing. 
+In order to use it, the requesting user or target pod’s service account must be authorized to use the policy, by allowing the use verb on the policy.
+
+Most Kubernetes pods are not created directly by users. Instead, they are typically created indirectly as part of a Deployment, ReplicaSet, or other templated controller via the controller manager. Granting the controller access to the policy would grant access for all pods created by that the controller, so the preferred method for authorizing policies is to grant access to the pod’s service account
+
+First, a Role or ClusterRole needs to grant access to use the desired policies. The rules to grant access look like this:
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: <role name>
+rules:
+- apiGroups: ['policy']
+  resources: ['podsecuritypolicies']
+  verbs:     ['use']
+  resourceNames:
+  - <list of policies to authorize>
+
+
+
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: <binding name>
+roleRef:
+  kind: ClusterRole
+  name: <role name>
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+# Authorize specific service accounts:
+- kind: ServiceAccount
+  name: <authorized service account name>
+  namespace: <authorized pod namespace>
+# Authorize specific users (not recommended):
+- kind: User
+  apiGroup: rbac.authorization.k8s.io
+  name: <authorized user name>
+
+### Ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/
