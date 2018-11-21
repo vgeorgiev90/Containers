@@ -19,12 +19,13 @@
        "echo 'deb https://packages.sury.org/php/ stretch main' > /etc/apt/sources.list.d/php.list",
        "apt-get update; apt-get install libcap2-bin wget php5.6-fpm php5.6-mysql php5.6-mbstring php5.6-gd php5.6-intl php5.6-xml php5.6-mcrypt php5.6-curl php5.6-common php-pear  -y",
        "mkdir /run/php && chown nginx:nginx /run/php; touch /etc/nginx/nginx.pid",
-       "/sbin/setcap cap_net_bind_service+ep /usr/sbin/nginx",
+       "/sbin/setcap cap_net_bind_service+eip /usr/sbin/nginx",
        "rm /etc/php/5.6/fpm/php.ini /etc/php/5.6/fpm/php-fpm.conf /etc/php/5.6/fpm/pool.d/www.conf /etc/php/5.6/fpm/pool.d/edge.conf -rf",
        "wget 10.0.11.170/php.ini -P /etc/php/5.6/fpm; wget 10.0.11.170/php-fpm.conf -P /etc/php/5.6/fpm; wget 10.0.11.170/www.conf -P /etc/php/5.6/fpm/pool.d; wget 10.0.11.170/edge.conf -P /etc/php/5.6/fpm/pool.d",
        "wget 10.0.11.170/wordpress.conf -P /etc/nginx; wget 10.0.11.170/limits.conf -P /etc/nginx",
        "rm /etc/nginx/nginx.conf -rf; wget 10.0.11.170/nginx.conf -P /etc/nginx",
-       "chown -R nginx:nginx /etc/nginx; chown -R nginx:nginx /var/cache; chgrp nginx /var/log; chmod 775 /var/log; chown -R nginx:nginx /usr/share/nginx"
+       "chown -R nginx:nginx /etc/nginx; chown -R nginx:nginx /var/cache; chgrp nginx /var/log; chmod 775 /var/log; chown -R nginx:nginx /usr/share/nginx",
+       "chmod 700 /sbin/capsh /sbin/getcap /sbin/getpcaps /sbin/setcap"
      ]
    }
   ],
