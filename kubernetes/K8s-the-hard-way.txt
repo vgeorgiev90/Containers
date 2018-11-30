@@ -894,7 +894,7 @@ Requires=docker.service
 Environment="KUBELET_CONFIG_ARGS=--cloud-provider= --config=/var/lib/kubelet/kubelet-config.yaml --container-runtime=docker --docker-endpoint=unix:///var/run/docker.sock --image-pull-progress-deadline=2m --kubeconfig=/var/lib/kubelet/kubeconfig --network-plugin=cni --register-node=true --v=0 --hostname-override=${HOSTNAME} --allow-privileged=true"
 
 WorkingDirectory=/var/lib/kubelet
-ExecStart=/usr/local/bin/kubelet $KUBELET_CONFIG_ARGS
+ExecStart=/usr/local/bin/kubelet \$KUBELET_CONFIG_ARGS
 
 Restart=on-failure
 RestartSec=5
