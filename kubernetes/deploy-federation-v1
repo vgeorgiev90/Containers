@@ -1,0 +1,84 @@
+################# Federation-v1 #####################
+#Ref: https://kubernetes.io/docs/tasks/federation/set-up-cluster-federation-kubefed/
+#Ref: https://github.com/clsacramento/kube-inst/wiki/Deploy-Federation
+
+### Make sure that you have entries and contexts for all clusters in your kubeconfig
+### Prereqs (federation controll plane image and kubefed binary)
+
+### Clone federation-v1 repo
+git clone https://github.com/kubernetes/federation.git
+
+## Download and install go - optional for make
+cd federation && make quick-release
+
+## Binaries are compiled in federation/_output/dockerized/bin/linux/amd64/
+## Image is build in /federation/_output/release-images/amd64
+
+## Load the federation cp image tar in docker
+docker load --input fcp-amd64.tar
+
+## Tag and push it to your repo
+docker tag gcr.io/google_containers/fcp-amd64:v1.10.0-alpha.0.47_0a26710a925a95 viktor90/federation:latest
+
+## Setup etcd operator and cluster ( all done on the host cluster )
+
+git clone https://github.com/coreos/etcd-operator.git
+
+# Setup rbac for etcd
+etcd-operator/example/rbac/create_role.sh
+
+# Create deploy for etcd operator
+kubectl create -f etcd-operator/example/deployment.yaml
+
+# CRD should be created
+$ kubectl get customresourcedefinitions
+NAME                                    AGE
+etcdclusters.etcd.database.coreos.com   18s
+
+# Create etcd cluster
+kubectl create -f etcd-operator/example/example-etcd-cluster.yaml
+
+## Deploy coredns for discovery
+
+$ cat Values.yaml
+isClusterService: false
+serviceType: "NodePort"
+middleware:
+  kubernetes:
+    enabled: false
+  etcd:
+    enabled: true
+    zones:
+    - "example.com."
+    endpoint: "http://example-etcd-cluster-client:2379"
+
+helm install --name coredns -f Values.yaml stable/coredns
+
+# Most likely rbac should be created for coredns
+
+# Coredns config file modify to your needs
+
+cat > coredns-provider.conf << EOF
+[Global]
+etcd-endpoints = http://example-etcd-cluster-client:2379
+zones = example.com.
+coredns-endpoints = 10.1.0.17:30267
+EOF
+
+
+### Deploy federation controll plane
+
+kubefed init federation \
+--host-cluster-context="cluster1" \
+--dns-provider="coredns" \
+--dns-provider-config="$HOME/coredns-provider.conf" \
+--dns-zone-name="example.com." \
+--api-server-service-type="NodePort" \
+--etcd-persistent-storage=false \
+--image="your-pushed-image"
+
+# Before init make sure that you have PV created for etcd persistent storage, check the official docs for info
+
+## Join all clusters
+kubectl config use-context federation
+kubefed --context=federation join kubernetes --cluster-context=cluster2 --host-cluster-context=cluster1
