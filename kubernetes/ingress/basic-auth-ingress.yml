@@ -6,6 +6,9 @@
 
 ## For k8s dashboard ingress add the following also
 ## nginx.ingress.kubernetes.io/secure-backends: "true"
+## For newer ingress versions
+## nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+
 
 ## For ssl support create certificate and then tls secret
 ## kubectl create secret tls tls-secret --key tls.key --cert tls.crt
