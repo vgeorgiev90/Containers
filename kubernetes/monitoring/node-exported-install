@@ -1,0 +1,26 @@
+adduser prometheus
+
+cd /home/prometheus
+mkdir node_exporter
+cd node_exporter
+curl -LO "https://github.com/prometheus/node_exporter/releases/download/v0.16.0/node_exporter-0.16.0.linux-amd64.tar.gz"
+tar -xvzf node_exporter-0.16.0.linux-amd64.tar.gz
+chown prometheus:prometheus node_exporter
+
+vi /etc/systemd/system/node_exporter.service
+
+[Unit]
+Description=Node Exporter
+
+[Service]
+User=prometheus
+ExecStart=/home/prometheus/node_exporter/node_exporter
+
+[Install]
+WantedBy=default.target
+
+## Add the following to prometheus config map
+
+- job_name: 'node_exporter'
+  static_configs:
+  - targets: ['<KUBER_MASTER_PRIVATE_IP>:9100', <UBER_WORKER_PRIVATE_IP>:9100]
