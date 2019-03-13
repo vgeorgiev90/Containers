@@ -52,3 +52,23 @@
 
 ##Docker security scanning
 #https://github.com/docker/docker-bench-security
+
+
+##Docker auditing rules
+#!/bin/bash
+sudo apt update
+sudo apt-get install -y auditd
+
+echo "-w /usr/bin/docker -p wa -k docker" | sudo tee -a /etc/audit/rules.d/audit.rules
+echo "-w /var/lib/docker -p wa -k docker" | sudo tee -a /etc/audit/rules.d/audit.rules
+echo "-w /etc/docker -p wa -k docker" | sudo tee -a /etc/audit/rules.d/audit.rules
+echo "-w /lib/systemd/system/docker.service -p wa -k docker" | sudo tee -a /etc/audit/rules.d/audit.rules
+echo "-w /lib/systemd/system/docker.socket -p wa -k docker" | sudo tee -a /etc/audit/rules.d/audit.rules
+echo "-w /etc/default/docker -p wa -k docker" | sudo tee -a /etc/audit/rules.d/audit.rules
+echo "-w /etc/docker/daemon.json -p wa -k docker" | sudo tee -a /etc/audit/rules.d/audit.rules
+echo "-w /usr/bin/docker-containerd -p wa -k docker" | sudo tee -a /etc/audit/rules.d/audit.rules
+echo "-w /usr/bin/docker-runc -p wa -k docker" | sudo tee -a /etc/audit/rules.d/audit.rules
+
+sudo service auditd restart
+
+##ausearch -k docker
