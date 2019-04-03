@@ -1,0 +1,22 @@
+pipeline {
+    agent any
+    stages {
+        stage('Build crowdwiz dotnet API image') {
+            steps {
+               sh 'git -C /var/builds/beta reset --hard'
+               sh 'git -C /var/builds/beta pull'
+               sh 'dotnet restore /var/builds/beta/src/Crowdwiz.Api.sln -s http://nuget.bgdev.tol/nuget  -s https://api.nuget.org/v3/index.json'
+               sh 'dotnet publish /var/builds/beta/src/Crowdwiz.Api/Crowdwiz.Api.csproj --configuration Release'
+               sh 'if docker images | grep registry.superdev.com/crowdwiz | grep api-${tag} 2>/dev/null 1>&2; then docker rmi registry.superdev.com/crowdwiz:api-${tag} ;fi'
+               sh 'packer build -var "tag=api-${tag}" /var/builds/images/crowdwiz-dotnet/packer-crowdwiz-api.json'
+            }
+        }
+        stage('Run Container in the cluster with the new image'){
+            steps {
+                sh 'kubectl delete deploy crowdwiz-dotnet-api --kubeconfig=/var/lib/jenkins/jenkins.kubeconfig 2>/dev/null || true'
+                sh 'sleep 10'
+                sh 'sed "s/TAG/${tag}/" /var/builds/deployments/crowdwiz/dotnet-api.yml | kubectl --kubeconfig=/var/lib/jenkins/jenkins.kubeconfig create -f -'
+            }
+        }
+    }
+}

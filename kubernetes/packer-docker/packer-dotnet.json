@@ -1,0 +1,40 @@
+{
+ "variables": {
+    "repository": "registry.superdev.com/crowdwiz",
+    "tag": "api-latest"
+  },
+  "builders": [{
+    "type": "docker",
+    "author": "v.georgiev90@abv.bg",
+    "image": "microsoft/dotnet:aspnetcore-runtime",
+    "commit": true,
+    "changes": [ "EXPOSE 5001", "WORKDIR /api", "ENTRYPOINT dotnet /api/Crowdwiz.Api.dll" ]
+  }],
+  "provisioners" : [
+   {
+     "type": "shell",
+     "inline": [
+       "mkdir /api"
+     ]
+   },
+   {
+     "type": "file",
+     "source": "/var/builds/beta/src/Crowdwiz.Api/bin/Release/netcoreapp2.1/publish/.",
+     "destination": "/api"
+   }
+  ],
+
+ "post-processors": [
+   [
+   {
+     "type": "docker-tag",
+     "repository": "{{user `repository`}}",
+     "tag": "{{ user `tag` }}"
+   },
+   {
+     "type": "docker-push"
+   }
+   ]
+  ]
+}
+

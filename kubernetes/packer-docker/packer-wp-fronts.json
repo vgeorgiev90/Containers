@@ -1,0 +1,56 @@
+{
+ "variables": {
+    "repository": "registry.superdev.com/frontends",
+    "tag": "brand-tag",
+    "domain": "example.tld"
+  },
+  "builders": [{
+    "type": "docker",
+    "author": "v.georgiev90@abv.bg",
+    "image": "viktor90/nginx:unpriv",
+    "commit": true,
+    "changes": [ "EXPOSE 80", "USER nginx", "WORKDIR /usr/share/nginx/html", "ENTRYPOINT /usr/sbin/php-fpm5.6 && /usr/sbin/nginx -g 'daemon off;'" ]
+  }],
+  "provisioners" : [
+   {
+     "type": "shell",
+     "inline": [
+        "echo 'server {' > /etc/nginx/conf.d/website.conf",
+        "echo 'listen 80;' >> /etc/nginx/conf.d/website.conf",
+        "echo 'server_name www.DOMAIN DOMAIN;' >> /etc/nginx/conf.d/website.conf",
+        "echo 'root   /usr/share/nginx/html;' >> /etc/nginx/conf.d/website.conf",
+        "echo 'index  index.php index.html index.htm;' >> /etc/nginx/conf.d/website.conf",
+        "echo 'include /etc/nginx/wordpress.conf;' >> /etc/nginx/conf.d/website.conf",
+        "echo 'include /etc/nginx/limits.conf;' >> /etc/nginx/conf.d/website.conf",
+        "echo '}' >> /etc/nginx/conf.d/website.conf"
+     ]
+   },
+   {
+     "type": "file",
+     "source": "/var/builds/frontend/frontend/.",
+     "destination": "/usr/share/nginx/html"
+   },
+   {
+     "type": "shell",
+     "inline": [
+        "chown -R nginx: /usr/share/nginx/html",
+        "sed -i 's/10\\..*/wordpress-mysql.wordpress-preview.svc.cluster.local/g' /usr/share/nginx/html/wp-config.json",
+        "sed -i 's/DOMAIN/{{ user `domain`}}/g' /etc/nginx/conf.d/website.conf"
+     ]
+   }
+  ],
+
+ "post-processors": [
+   [
+   {
+     "type": "docker-tag",
+     "repository": "{{user `repository`}}",
+     "tag": "{{ user `tag` }}"
+   },
+   {
+     "type": "docker-push"
+   }
+   ]
+  ]
+}
+

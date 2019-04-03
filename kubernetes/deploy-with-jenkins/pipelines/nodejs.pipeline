@@ -1,0 +1,21 @@
+pipeline {
+    agent any
+    stages {
+        stage('Build crowdwiz dotnetnodejs APP image') {
+            steps {
+               sh 'git -C /var/builds/app reset --hard'
+               sh 'git -C /var/builds/app pull'
+               sh 'docker rmi registry.superdev.com/crowdwiz:nodeapp-${tag} || true'
+               sh 'docker build -t registry.superdev.com/crowdwiz:nodeapp-${tag} -f /var/builds/images/crowdwiz-nodejs/crowdwiz-nodejs-app.dockerfile /var/builds/app'
+               sh 'docker push registry.superdev.com/crowdwiz:nodeapp-${tag}'
+            }
+        }
+        stage('Run Container in the cluster with the new image'){
+            steps {
+                sh 'kubectl delete deploy crowdwiz-nodejs-app --kubeconfig=/var/lib/jenkins/jenkins.kubeconfig 2>/dev/null || true'
+                sh 'sleep 10'
+                sh 'sed "s/TAG/${tag}/" /var/builds/deployments/crowdwiz/nodejs-app.yml | kubectl --kubeconfig=/var/lib/jenkins/jenkins.kubeconfig create -f -'
+            }
+        }
+    }
+}

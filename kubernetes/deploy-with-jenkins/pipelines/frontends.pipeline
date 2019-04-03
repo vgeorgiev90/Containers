@@ -1,0 +1,21 @@
+pipeline {
+    agent any
+    stages {
+        stage('Build wordpress frontend image') {
+            steps {
+               sh 'docker rmi registry.superdev.com/frontends:${tag} || true'
+               sh 'rm -rf /var/builds/frontend/frontend'
+               sh 'cd /var/builds/frontend && git clone ssh://git@git.tradologic.com:10022/TL/frontend.git --single-branch --branch ${branch}'
+               sh 'packer build -var "tag=${tag}" -var "domain=${domain}" /var/builds/images/frontend/packer-wordpress-front.json'
+            }
+        }
+        stage('Run Container in the cluster with the new image'){
+            steps {
+                sh 'kubectl delete deploy wordpress-${tag} -n wordpress-preview --kubeconfig=/var/lib/jenkins/jenkins.kubeconfig 2>/dev/null || true'
+                sh 'sleep 10'
+                sh 'sed "s/BRANCH/${tag}/" /var/builds/deployments/frontend/wordpress-fronts.yml | kubectl -n wordpress-preview --kubeconfig=/var/lib/jenkins/jenkins.kubeconfig create -f -'
+            }
+        }
+    }
+}
+
