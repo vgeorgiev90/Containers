@@ -72,3 +72,10 @@ echo "-w /usr/bin/docker-runc -p wa -k docker" | sudo tee -a /etc/audit/rules.d/
 sudo service auditd restart
 
 ##ausearch -k docker
+
+
+##Kube bench utility
+docker run --rm -v `pwd`:/host aquasec/kube-bench:latest install
+
+#For master node
+./kube-bench master
