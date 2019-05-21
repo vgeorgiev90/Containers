@@ -79,3 +79,11 @@ docker run --rm -v `pwd`:/host aquasec/kube-bench:latest install
 
 #For master node
 ./kube-bench master
+
+
+## Best practice admission controllers to be enabled:
+AlwaysPullImages - always pull the latest images,
+DenyEscalatingExec - blocks exec and attach commands on privileged containers
+PodSecurityPolicy - enables pod security policies
+LimitRange and ResourceQuota - to prevent DoS situations
+NodeRestrictions - ensure that kubelet can modofy only own resources/pods 
