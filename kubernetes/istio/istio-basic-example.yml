@@ -78,3 +78,8 @@ spec:
   - name: v2
     labels:
       version: v2
+    ## Circuit breaker based on max connections
+    trafficPolicy:
+      connectionPool:
+        tcp:
+          maxConnections: 100
