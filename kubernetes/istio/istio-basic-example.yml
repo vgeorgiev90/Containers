@@ -1,0 +1,80 @@
+#https://istio.io/docs/concepts
+#### Injecting envoy sidecares to pods
+# istioctl kube-inject -f deploy.yml -o deploy-istio.yml
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: website-gateway
+spec:
+  selector:
+    # Which pods we want to expose as Istio router
+    # This label points to the default one installed from file istio-demo.yaml
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    # Here we specify which Kubernetes service names
+    # we want to serve through this Gateway
+    hosts:
+    - "*"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: website-virtual-service
+spec:
+  #Backend service name
+  hosts:
+  - "*"
+  gateways:
+  - website-gateway
+  http:
+# Match exact routes
+#  - match:
+#    - uri: 
+#        exact: /testing
+# Conditional rules from other pods for example
+#  - match:
+#    - sourceLabels:
+#        app: reviews
+  - route:
+    - destination:
+        #Service Name
+        host: website
+        # It must match the subset name in the destination rules
+        subset: v1
+      # Weight for traffic split between pods
+      weight: 20
+    - destination:
+        host: website
+        subset: v2
+      weight: 80
+    #Fault injection delay
+    fault:
+      delay:
+        percent: 10
+        fixedDelay: 5s
+      #Fault injection abort
+      abort:
+        percent: 50
+        httpStatus: 500
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: website
+spec:
+  ## Service name for the pods
+  host: website
+  subsets:
+  - name: v1
+    #labels for the pods
+    labels:
+      version: v1
+  - name: v2
+    labels:
+      version: v2

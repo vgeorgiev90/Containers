@@ -1,0 +1,17 @@
+###### Istio components overview #######
+
+istio proxy sidecar(envoy) - it takes care of dynamic service discovery , load balancing, tls termination, health checks, staged rollouts, fault injection
+layer 7 proxy
+(control plane api)
+istio pilot - sends config to the proxy , service discovery , intelligent routing , resilency
+istio mixer - it handles access control , usage policies , telemetry data
+istio citadel - it takes care of user authentication , credential management, certificate management , traffic encryption
+
+galley - api interface for istio
+
+
+#Kubernetes install
+
+wget https://github.com/istio/istio/releases/download/1.1.7/istio-1.1.7-linux.tar.gz
+
+kubectl apply -f /istio/install/kubernetes/istio-demo.yml
