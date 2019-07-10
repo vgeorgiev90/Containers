@@ -1,0 +1,26 @@
+## Plugin required ssh steps 
+## Ref: https://github.com/jenkinsci/ssh-steps-plugin
+
+node {
+  def remote = [:]
+  remote.name = 'server1'
+  remote.host = '172.31.111.179'
+  remote.user = 'root'
+  remote.identityFile = '/var/jenkins_home/.ssh/id_rsa'
+  remote.allowAnyHosts = true
+  stage('Build Image') {
+    sshCommand remote: remote, command: "packer build -var tag=$tag /root/image-build/packer-image.json"   
+  }
+}
+
+node {
+  def remote = [:]
+  remote.name = 'server2'
+  remote.host = '172.31.101.177'
+  remote.user = 'root'
+  remote.identityFile = '/var/jenkins_home/.ssh/id_rsa'
+  remote.allowAnyHosts = true
+  stage('Deploy image') {
+    sshCommand remote: remote, command: "docker stop application-$tag || true; docker rm application-$tag || true; docker run -d --name application-$tag -p 80:80 registry.example.com/application:$tag"
+  }
+}
