@@ -12,6 +12,6 @@ galley - api interface for istio
 
 #Kubernetes install
 
-wget https://github.com/istio/istio/releases/download/1.1.7/istio-1.1.7-linux.tar.gz
+wget https://github.com/istio/istio/releases/download/1.2.2/istio-1.2.2-linux.tar.gz
 
 kubectl apply -f /istio/install/kubernetes/istio-demo.yml
