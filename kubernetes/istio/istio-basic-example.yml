@@ -83,3 +83,19 @@ spec:
       connectionPool:
         tcp:
           maxConnections: 100
+      tls:
+        mode: ISTIO_MUTUAL
+      
+---
+
+apiVersion: "authentication.istio.io/v1alpha1"
+kind: "Policy"
+metadata:
+  name: "website-mtls"
+spec:
+  targets:
+  - name: website
+  peers:
+  - mtls: {}
+
+
