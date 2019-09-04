@@ -1,0 +1,83 @@
+# Default values for registry.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+registry:
+  ## registry namespace
+  namespace: default
+  ## registry persistent volume claim , if no storage class is created persistent volume will be needed
+  pvc:
+    name: registry
+    size: 1Gi
+  ## registry tls settings 
+  tls:
+    secret_name: registry-tls
+    ## base64 encoded certificate
+    tls_cert: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURUekNDQWpjQ0ZEcDFOc2RyYm81V21kbUZmREpMa0pJdzV0dGpNQTBHQ1NxR1NJYjNEUUVCQ3dVQU1HUXgKQ3pBSkJnTlZCQVlUQWtGVk1STXdFUVlEVlFRSURBcFRiMjFsTFZOMFlYUmxNU0V3SHdZRFZRUUtEQmhKYm5SbApjbTVsZENCWGFXUm5hWFJ6SUZCMGVTQk1kR1F4SFRBYkJnTlZCQU1NRkhKbFoybHpkSEo1TG1WNFlXMXdiR1V1ClkyOXRNQjRYRFRFNU1Ea3dOREE1TURrek9Gb1hEVEl3TURrd016QTVNRGt6T0Zvd1pERUxNQWtHQTFVRUJoTUMKUVZVeEV6QVJCZ05WQkFnTUNsTnZiV1V0VTNSaGRHVXhJVEFmQmdOVkJBb01HRWx1ZEdWeWJtVjBJRmRwWkdkcApkSE1nVUhSNUlFeDBaREVkTUJzR0ExVUVBd3dVY21WbmFYTjBjbmt1WlhoaGJYQnNaUzVqYjIwd2dnRWlNQTBHCkNTcUdTSWIzRFFFQkFRVUFBNElCRHdBd2dnRUtBb0lCQVFDM0trOUNjUmR4VnlBMHI0WG1OWTg1emVJWUNSemkKSldwZFdMNWtoZVpJejlpQm5Id25aWkZET3lmd3NFZm1WMTh5QjN1QlkrUUFaZWZ5ZEVUQXBteVM2RExLRUVCNwpPUFgyb1hqaGdSMzFOYkMvWjZLc0NYRDFYVkc0by9EQUJvN1hqdjJ5Um8rcE1jRnliN1A2YUlEakxOUC9PZzlOClMvOCs1dytsbUZnbWpoSVY0VGNOT0pGMHd4cUdUMlB0VGRVMElmY3B4MjZlaERpK0gzSkU4N1VRRE1jRitseUoKWm5wdm1iWU9MUGU2NHJ1RE9QMG15eUlqb0FsNDBEaG1NcmQvSmI1NGJTaElJQkdhRVpiU0R0Yk5VK3NnSnNtRApIOVJHNVBGR1FpQy93TXZwU2RnbEU2MDgybmFHcE1XbnRqa0lEYkc1T3hwWnFacEk3R2wxaE9rSkFnTUJBQUV3CkRRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFLQnlDdEIxaGZRcXFvV1UwOU1MK25WVDN5MFJyVk9KMVh6Z3BSNzUKK3NVdVhYcndKdG4rWWtCam15SEpWQmpXeXVnZHZJZ3p4SVR3SXFTdG96VDFkL2J1YllXRGNxNGZuRnVYQ3BlSQpXODMzOW04bXpwYW0wZ2w1b2ZDcCtPN0NTVmo3L21SSVhCUlhuWC9yK1hodHBiejBMcHhzR01aZU44ZkpqZE5nClhycnZ2NTB0dXRsNHV4RE9VZm9NL0R1ZEZXWnIxVXN6S1IydGNjeTBSN2dEZFlpK0I3WVlCV2ZVNE9rU2lKd1MKZmUyS2pYL1VNTHNUZUI3M1c5bEtNSDdBRmttWjJ0dW12dFVBMUFUcVFpZnluTzlmSm80Z2FkUkpYVWJxQUJMMworSVhlckhjOFdDSFhwNjZjaDRTWlZGTyswZnNiYlZablUwYi9VbzZaeU5lVGU0ST0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+    ## base64 encoded key
+    tls_key: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2QUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktZd2dnU2lBZ0VBQW9JQkFRQzNLazlDY1JkeFZ5QTAKcjRYbU5ZODV6ZUlZQ1J6aUpXcGRXTDVraGVaSXo5aUJuSHduWlpGRE95ZndzRWZtVjE4eUIzdUJZK1FBWmVmeQpkRVRBcG15UzZETEtFRUI3T1BYMm9YamhnUjMxTmJDL1o2S3NDWEQxWFZHNG8vREFCbzdYanYyeVJvK3BNY0Z5CmI3UDZhSURqTE5QL09nOU5TLzgrNXcrbG1GZ21qaElWNFRjTk9KRjB3eHFHVDJQdFRkVTBJZmNweDI2ZWhEaSsKSDNKRTg3VVFETWNGK2x5SlpucHZtYllPTFBlNjRydURPUDBteXlJam9BbDQwRGhtTXJkL0piNTRiU2hJSUJHYQpFWmJTRHRiTlUrc2dKc21ESDlSRzVQRkdRaUMvd012cFNkZ2xFNjA4Mm5hR3BNV250amtJRGJHNU94cFpxWnBJCjdHbDFoT2tKQWdNQkFBRUNnZ0VBUS8rWEVTbCs5SHJONEFGUmlsZFQ1cmZDT2Y0WUZQU2kraWlaOWlPbmpGeHQKR2lFSURuQXNiM01rcnJ3aTFTYVdscklrYmJLeDBGd0VzZ1BzQ2tFK2lZTmVaNW1FOXJuOHhpVElCWit6aVhiMwpPUGUyY252R3piQnBTRXpFY2VWOVhoVWRwZk9BSGVYMDFSRVhGZDE2Qzl4Mmo0ZjBhbFBPWElIWFV6aXRjUklvCmFOTm1mbjVSV0dZL1A1MThKR0RNRXd2b2NRSUt6OGdUcDVPYnhrbForc3JWVUdrUzFFN1kwbHlEQWRDWVhlaXcKYWdSVTVNWHRUdXBwOGppSGZDTXlPTWpEUE13a09POVRxME90UEd6WnEyb0dmaHdsQWgvd3AwcFB4L0NyRTRycApSc3lDWVdoSVVjdmV2ZUFCdDYzdEtyQmwvVE5RRERvRERaVDdhWENZSVFLQmdRRFlsK2Y1TWtyWjVNQm41Z0Z6CmhEV0t5ZVFvaUFKRW9nTmJ2azZXZlIyY2MwSmp6TmhrMXFPZmlodGZ3clBUc3Yxbm8rUDNYVUdkUTQwWjRacC8KQ2UzMTM4Zzhtb1NNZ2RaQTN0NnVWeUY5eGFZQ09vU3REZW5kWVJibGlpTmc3YWNHOHlDRTJ4RVM1bWdIYzJ6TQpPZ2lKSW94RFJ1NGRkdHlxT2g0RWkrN1RCUUtCZ1FEWWZYTVNodGx1cmdDam40OW8wMXRxalFHYkVJVUF1SkJtClVKeUhhcG1CK21nY2NHNmpoMlNXVW96bitwV1hIWFJzWERNQmhsWEt4a2JuekRieW5UUUFaWnczMXJmV3Y5L3EKYTNMMThuK0VyQ1FvSjE0d3d6Q1hET3BjR1dIZWIvNW5VYVJRbzNDcWIzekN4UWhLLzRtOExnRzFXUTRvanBwYgpCMVhTb1oybE5RS0JnRnk3ZFFNWlNEalFHcHloT2ovVi9BS0crOXRxbCtZQW80VjFEanFhS01KaUNxdWwrWVA2CjdhVVJ3VFNYck54WGh1MEhtME8rTnFoNVVvRWhPVDlvNWV2ZU91SFBtaTU2TEZ3cno1VS9Fc1RCaVpqc3F2OVkKdEtjbXVXSGZhZFJIQzdzSy93SkN0S1d0NWg1Q2lmTkthWHNsUW41UGNRVkdiYVdvS2sveUJYZHRBb0dBSTZTVAoyNHNFSldyVWhCdnpHb2toMWVzZFJwQnp0V2l0cllxOEdyZDhTcUFWb0FrS3pqV3VZK2wzZFlJV091a0lrQWFtCkJ5dzgxOFBKVE1TY2oxaytoSW8yTENOWDVTMTJDanhpa3dlMzR2b01nZWZwWkJIZTRCK3FQanVYbDIzTTd1bk0KS2RLZTdCQ3E4ODVJelVCQlJ4QTBDODE3dlVXdE9DdCsvOHpJRGJrQ2dZQWN2Z0lXRWJQdGNuMmNRVnJHVVBUUgorbHlibWdlclcyUVVvMHlnOVNaTEtFcE80Tm5oci9zSmhXZnZGRWdXd3dTcThuSHBjc2RlaFMzc1U4andGK2p2CnBNWmNUR0JNKy9xeVRQcW1NRFpnYUZPYlVrc2VTdmF0c0NkbHpNZEtRdGdLc2ZQaURnNlRFeGpwWmtrb2VoaWQKUkg1aUpiQ2R3U0x3cW44TUhEVUNwdz09Ci0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0K
+  htpasswd_configmap:
+    name: htpasswd
+    ## generation: docker run --rm --entrypoint htpasswd registry:2 -Bbn admin admin123 > htpasswd
+    data: admin:$2y$05$bFeIInX11hNJBhrJXexmOegzTjDxjoG9nqye/nK0NYWnXZMzNe1jS 
+  ## Registry environment variables, no need for changes here
+  environment:
+    - name: "REGISTRY_STORAGE_DELETE_ENABLED"
+      value: "true"
+    - name: "REGISTRY_AUTH"
+      value: "htpasswd"
+    - name: "REGISTRY_AUTH_HTPASSWD_REALM"
+      value: "Registry Realm"
+    - name: "REGISTRY_AUTH_HTPASSWD_PATH"
+      value: "/auth/htpasswd"
+    - name: "REGISTRY_HTTP_TLS_CERTIFICATE"
+      value: "/certs/tls.crt"
+    - name: "REGISTRY_HTTP_TLS_KEY"
+      value: "/certs/tls.key"
+
+
+image:
+  repository: registry
+  tag: 2
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 443
+
+ingress:
+  enabled: true
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: registry.example.com
+      paths: []
+  tls:
+    - secretName: registry-tls
+      hosts:
+        - registry.example.com
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
