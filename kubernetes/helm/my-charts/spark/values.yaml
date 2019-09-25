@@ -39,7 +39,7 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
-resources-workers: {}
+resources_workers: {}
 
 nodeSelector: {}
 
