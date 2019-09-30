@@ -34,8 +34,9 @@ ingress:
   #nginx.ingress.kubernetes.io/proxy-body-size: "0"
   #nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
   #nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
-  hosts:
-    - host: hadoop.endava.local
+  historyserver_host: historyserver.endava.local
+  namenode_host: hadoop.endava.local
+
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
@@ -70,7 +71,7 @@ hadoop_env_config:
   YARN_CONF_yarn_resourcemanager_resource__tracker_address: "hadoop-resourcemanager-0.hadoop-resourcemanager:8031"
   YARN_CONF_yarn_timeline___service_enabled: "true"
   YARN_CONF_yarn_timeline___service_generic___application___history_enabled: "true"
-  YARN_CONF_yarn_timeline___service_hostname: "hadoop-historyserver-0"
+  YARN_CONF_yarn_timeline___service_hostname: "hadoop-historyserver-0.hadoop-historyserver"
   YARN_CONF_mapreduce_map_output_compress: "true"
   YARN_CONF_mapred_map_output_compress_codec: "org.apache.hadoop.io.compress.SnappyCodec"
   YARN_CONF_yarn_nodemanager_resource_memory___mb: "16384"
@@ -85,9 +86,9 @@ hadoop_env_config:
   MAPRED_CONF_mapreduce_reduce_memory_mb: "8192"
   MAPRED_CONF_mapreduce_map_java_opts: "-Xmx3072m"
   MAPRED_CONF_mapreduce_reduce_java_opts: "-Xmx6144m"
-  MAPRED_CONF_yarn_app_mapreduce_am_env: "HADOOP_MAPRED_HOME:/opt/hadoop-3.1.2/"
-  MAPRED_CONF_mapreduce_map_env: "HADOOP_MAPRED_HOME:/opt/hadoop-3.1.2/"
-  MAPRED_CONF_mapreduce_reduce_env: "HADOOP_MAPRED_HOME:/opt/hadoop-3.1.2/"
+  MAPRED_CONF_yarn_app_mapreduce_am_env: "HADOOP_MAPRED_HOME=/opt/hadoop-3.1.2/"
+  MAPRED_CONF_mapreduce_map_env: "HADOOP_MAPRED_HOME=/opt/hadoop-3.1.2/"
+  MAPRED_CONF_mapreduce_reduce_env: "HADOOP_MAPRED_HOME=/opt/hadoop-3.1.2/"
 
 
 

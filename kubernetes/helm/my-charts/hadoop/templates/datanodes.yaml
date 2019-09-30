@@ -45,8 +45,6 @@ spec:
           mountPath: /hadoop/dfs/data
      #volumes:
      # - name: datanode
-        #persistentVolumeClaim:
-        #  claimName: hadoop_datanode
      #   hostPath:
      #     path: /tmp/hadoop
   volumeClaimTemplates:

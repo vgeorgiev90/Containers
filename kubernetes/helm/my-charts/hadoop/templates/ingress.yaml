@@ -22,13 +22,19 @@ spec:
   {{- end }}
 {{- end }}
   rules:
-  {{- range .Values.ingress.hosts }}
-    - host: {{ .host | quote }}
+    - host: {{ .Values.ingress.namenode_host }}
       http:
         paths:
           - path: /
             backend:
               serviceName: hadoop-namenode
               servicePort: 9870
-  {{- end }}
+    - host: {{ .Values.ingress.historyserver_host }}
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: hadoop-historyserver
+              servicePort: 8188
 {{- end }}
+
