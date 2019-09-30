@@ -1,0 +1,48 @@
+apiVersion: v1
+data:
+  CORE_CONF_fs_defaultFS: "{{ .Values.hadoop_env_config.CORE_CONF_fs_defaultFS }}"
+  CORE_CONF_hadoop_http_staticuser_user: "{{ .Values.hadoop_env_config.CORE_CONF_hadoop_http_staticuser_user }}"
+  CORE_CONF_hadoop_proxyuser_hue_hosts: "{{ .Values.hadoop_env_config.CORE_CONF_hadoop_proxyuser_hue_hosts }}"
+  CORE_CONF_hadoop_proxyuser_hue_groups: "{{ .Values.hadoop_env_config.CORE_CONF_hadoop_proxyuser_hue_groups }}"
+  CORE_CONF_io_compression_codecs: "{{ .Values.hadoop_env_config.CORE_CONF_io_compression_codecs }}"
+
+  HDFS_CONF_dfs_webhdfs_enabled: "{{ .Values.hadoop_env_config.HDFS_CONF_dfs_webhdfs_enabled }}"
+  HDFS_CONF_dfs_permissions_enabled: "{{ .Values.hadoop_env_config.HDFS_CONF_dfs_permissions_enabled }}"
+  HDFS_CONF_dfs_namenode_datanode_registration_ip___hostname___check: "{{ .Values.hadoop_env_config.HDFS_CONF_dfs_namenode_datanode_registration_ip___hostname___check }}"
+
+  YARN_CONF_yarn_log___aggregation___enable: "{{ .Values.hadoop_env_config.YARN_CONF_yarn_log___aggregation___enable }}"
+  YARN_CONF_yarn_log_server_url: "{{ .Values.hadoop_env_config.YARN_CONF_yarn_log_server_url }}"
+  YARN_CONF_yarn_resourcemanager_recovery_enabled: "{{ .Values.hadoop_env_config.YARN_CONF_yarn_resourcemanager_recovery_enabled }}"
+  YARN_CONF_yarn_resourcemanager_store_class: "{{ .Values.hadoop_env_config.YARN_CONF_yarn_resourcemanager_store_class }}"
+  YARN_CONF_yarn_resourcemanager_scheduler_class: "{{ .Values.hadoop_env_config.YARN_CONF_yarn_resourcemanager_scheduler_class }}"
+  YARN_CONF_yarn_scheduler_capacity_root_default_maximum___allocation___mb: "{{ .Values.hadoop_env_config.YARN_CONF_yarn_scheduler_capacity_root_default_maximum___allocation___mb }}"
+  YARN_CONF_yarn_scheduler_capacity_root_default_maximum___allocation___vcores: "{{ .Values.hadoop_env_config.YARN_CONF_yarn_scheduler_capacity_root_default_maximum___allocation___vcores }}"
+  YARN_CONF_yarn_resourcemanager_fs_state___store_uri: "{{ .Values.hadoop_env_config.YARN_CONF_yarn_resourcemanager_fs_state___store_uri }}"
+  YARN_CONF_yarn_resourcemanager_system___metrics___publisher_enabled: "{{ .Values.hadoop_env_config.YARN_CONF_yarn_resourcemanager_system___metrics___publisher_enabled }}"
+  YARN_CONF_yarn_resourcemanager_hostname: "{{ .Values.hadoop_env_config.YARN_CONF_yarn_resourcemanager_hostname }}"
+  #YARN_CONF_yarn_resourcemanager_address: "{{ .Values.hadoop_env_config.YARN_CONF_yarn_resourcemanager_address }}"
+  #YARN_CONF_yarn_resourcemanager_scheduler_address: "{{ .Values.hadoop_env_config.YARN_CONF_yarn_resourcemanager_scheduler_address }}"
+  #YARN_CONF_yarn_resourcemanager_resource__tracker_address: "{{ .Values.hadoop_env_config.YARN_CONF_yarn_resourcemanager_resource__tracker_address }}"
+  YARN_CONF_yarn_timeline___service_enabled: "{{ .Values.hadoop_env_config.YARN_CONF_yarn_timeline___service_enabled }}"
+  YARN_CONF_yarn_timeline___service_generic___application___history_enabled: "{{ .Values.hadoop_env_config.YARN_CONF_yarn_timeline___service_generic___application___history_enabled }}"
+  YARN_CONF_yarn_timeline___service_hostname: "{{ .Values.hadoop_env_config.YARN_CONF_yarn_timeline___service_hostname }}"
+  YARN_CONF_mapreduce_map_output_compress: "{{ .Values.hadoop_env_config.YARN_CONF_mapreduce_map_output_compress }}"
+  YARN_CONF_mapred_map_output_compress_codec: "{{ .Values.hadoop_env_config.YARN_CONF_mapred_map_output_compress_codec }}"
+  YARN_CONF_yarn_nodemanager_resource_memory___mb: "{{ .Values.hadoop_env_config.YARN_CONF_yarn_nodemanager_resource_memory___mb }}"
+  YARN_CONF_yarn_nodemanager_resource_cpu___vcores: "{{ .Values.hadoop_env_config.YARN_CONF_yarn_nodemanager_resource_cpu___vcores }}"
+  YARN_CONF_yarn_nodemanager_disk___health___checker_max___disk___utilization___per___disk___percentage: "{{ .Values.hadoop_env_config.YARN_CONF_yarn_nodemanager_disk___health___checker_max___disk___utilization___per___disk___percentage }}"
+  YARN_CONF_yarn_nodemanager_remote___app___log___dir: "{{ .Values.hadoop_env_config.YARN_CONF_yarn_nodemanager_remote___app___log___dir }}"
+  YARN_CONF_yarn_nodemanager_aux___services: "{{ .Values.hadoop_env_config.YARN_CONF_yarn_nodemanager_aux___services }}"
+
+  MAPRED_CONF_mapreduce_framework_name: "{{ .Values.hadoop_env_config.MAPRED_CONF_mapreduce_framework_name }}"
+  MAPRED_CONF_mapred_child_java_opts: "{{ .Values.hadoop_env_config.MAPRED_CONF_mapred_child_java_opts }}"
+  MAPRED_CONF_mapreduce_map_memory_mb: "{{ .Values.hadoop_env_config.MAPRED_CONF_mapreduce_map_memory_mb }}"
+  MAPRED_CONF_mapreduce_reduce_memory_mb: "{{ .Values.hadoop_env_config.MAPRED_CONF_mapreduce_reduce_memory_mb }}"
+  MAPRED_CONF_mapreduce_map_java_opts: "{{ .Values.hadoop_env_config.MAPRED_CONF_mapreduce_map_java_opts }}"
+  MAPRED_CONF_mapreduce_reduce_java_opts: "{{ .Values.hadoop_env_config.MAPRED_CONF_mapreduce_reduce_java_opts }}"
+  MAPRED_CONF_yarn_app_mapreduce_am_env: "{{ .Values.hadoop_env_config.MAPRED_CONF_yarn_app_mapreduce_am_env }}"
+  MAPRED_CONF_mapreduce_map_env: "{{ .Values.hadoop_env_config.MAPRED_CONF_mapreduce_map_env }}"
+  MAPRED_CONF_mapreduce_reduce_env: "{{ .Values.hadoop_env_config.MAPRED_CONF_mapreduce_reduce_env }}"
+kind: ConfigMap
+metadata:
+  name: hadoop-env-config
