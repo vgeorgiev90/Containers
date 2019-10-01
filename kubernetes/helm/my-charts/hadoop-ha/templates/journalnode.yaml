@@ -1,0 +1,53 @@
+apiVersion: apps/v1                                                                                                 
+kind: StatefulSet                                                                                              
+metadata:
+  name: {{ include "hadoop.fullname" . }}-journalnode
+  labels:
+{{ include "hadoop.labels" . | indent 4 }}
+    app: hadoop-journalnode
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      name: hadoop-journalnode
+  serviceName: hadoop-journalnode
+  template:
+    metadata:
+      labels:
+        name: hadoop-journalnode
+        app: hadoop-journalnode
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - hadoop-journalnode
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: datanode
+        image: {{ .Values.images.journalnode }}
+        ports:
+        - containerPort: 8485
+        envFrom:
+        - configMapRef:
+            name: hadoop-env-config
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+        volumeMounts:
+        - name: journalnode
+          mountPath: /hadoop/journalnode/data
+      volumes:
+      - name: journalnode
+        emptyDir: {}
+ #volumeClaimTemplates:
+ # - metadata:
+ #     name: journalnode
+ #   spec:
+ #     accessModes: [ "ReadWriteOnce" ]
+ #     resources:
+ #       requests:
+ #         storage: {{ .Values.journalnodes.storage }}

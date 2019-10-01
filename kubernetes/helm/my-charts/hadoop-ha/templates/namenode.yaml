@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "hadoop.fullname" . }}-namenode
+  labels:
+{{ include "hadoop.labels" . | indent 4 }}
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hadoop-namenode
+      app.kubernetes.io/name: {{ include "hadoop.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  serviceName: hadoop-namenode
+  template:
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+            - key: app
+              operator: In
+              values:
+              - hadoop-namenode
+          topologyKey: "kubernetes.io/hostname"
+    metadata:
+      labels:
+        app: hadoop-namenode
+        app.kubernetes.io/name: {{ include "hadoop.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.images.namenode }}"
+          ports:
+            - name: http
+              containerPort: 9870
+              protocol: TCP
+            - name: namenode
+              containerPort: 8020
+              protocol: TCP
+          envFrom:
+          - configMapRef:
+              name: hadoop-env-config
+          env:
+          - name: "CLUSTER_NAME"
+            value: "{{ .Values.hadoop_env_config.cluster_name }}"
+          - name: "SERVICE_PRECONDITION"
+            value: "hadoop-journalnode:8485"
+          volumeMounts:
+          - name: namenode
+            mountPath: /hadoop/dfs/name
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: namenode
+          emptyDir: {}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+ #volumeClaimTemplates:
+ # - metadata:
+ #     name: namenode
+ #   spec:
+ #     accessModes: [ "ReadWriteOnce" ]
+ #     resources:
+ #       requests:
+ #         storage: {{ .Values.namenodes.storage }}
+

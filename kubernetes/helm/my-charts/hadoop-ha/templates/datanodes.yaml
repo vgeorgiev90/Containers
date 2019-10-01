@@ -1,0 +1,56 @@
+apiVersion: apps/v1                                                                                                 
+kind: StatefulSet                                                                                              
+metadata:
+  name: {{ include "hadoop.fullname" . }}-datanode
+  labels:
+{{ include "hadoop.labels" . | indent 4 }}
+    app: hadoop-datanode
+spec:
+  replicas: {{ .Values.datanodes.count }}
+  selector:
+    matchLabels:
+      name: hadoop-datanode
+  serviceName: hadoop-datanode
+  template:
+    metadata:
+      labels:
+        name: hadoop-datanode
+        app: hadoop-datanode
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - hadoop-datanode
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: datanode
+        image: {{ .Values.images.datanode }}
+        ports:
+        - containerPort: 9864
+        envFrom:
+        - configMapRef:
+            name: hadoop-env-config
+        env:
+        - name: "SERVICE_PRECONDITION"
+          value: "hadoop-namenode:9870"
+        resources:
+          {{- toYaml .Values.resources_datanode | nindent 12 }}
+        volumeMounts:
+        - name: datanode
+          mountPath: /hadoop/dfs/data
+      volumes:
+      - name: datanode
+        emptyDir: {}
+ #volumeClaimTemplates:
+ # - metadata:
+ #     name: datanode
+ #   spec:
+ #     accessModes: [ "ReadWriteOnce" ]
+ #     resources:
+ #       requests:
+ #         storage: {{ .Values.datanodes.storage }}
