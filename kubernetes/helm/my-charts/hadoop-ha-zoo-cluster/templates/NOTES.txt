@@ -1,0 +1,9 @@
+Your HA Hadoop cluster is confgigured and deployed, active namenode is hadoop-namenode-0
+
+Example failover test:
+kubectl exec -it hadoop-namenode-0 -- hdfs haadmin -failover namenode1 namenode2
+
+Expected result:
+namenode2 should transition to active state and namenode1 should transition to standby state
+
+

@@ -18,6 +18,9 @@ data:
   HDFS_CONF_dfs_client_failover_proxy_provider_hacluster: "org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider"
   HDFS_CONF_dfs_ha_fencing_methods: "shell(/bin/true)" ## Need to change this
   HDFS_CONF_dfs_journalnode_edits_dir: "/hadoop/journalnode/data"
+  ## Zookeeper settings for auto HA
+  HDFS_CONF_dfs_ha_automatic___failover_enabled: "true"
+  CORE_CONF_ha_zookeeper_quorum: "hadoop-zookeeper-0.hadoop-zookeeper:2181,hadoop-zookeeper-1.hadoop-zookeeper:2181,hadoop-zookeeper-2.hadoop-zookeeper:2181"
 
 
 

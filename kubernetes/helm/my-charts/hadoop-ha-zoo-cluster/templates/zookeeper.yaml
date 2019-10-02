@@ -1,0 +1,161 @@
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "hadoop.fullname" . }}-zookeeper
+  labels:
+{{ include "hadoop.labels" . | indent 4 }}
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: hadoop-zookeeper
+      app.kubernetes.io/name: {{ include "hadoop.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  serviceName: hadoop-zookeeper
+  template:
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+            - key: app
+              operator: In
+              values:
+              - hadoop-zookeeper
+          topologyKey: "kubernetes.io/hostname"
+    metadata:
+      labels:
+        app: hadoop-zookeeper
+        app.kubernetes.io/name: {{ include "hadoop.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.images.zookeeper }}"
+          ports:
+            - name: client
+              containerPort: 2181
+              protocol: TCP
+            - name: follower
+              containerPort: 2888
+              protocol: TCP
+            - name: election
+              containerPort: 3888
+              protocol: TCP
+            - name: admin
+              containerPort: 8080
+              protocol: TCP
+          env:
+          - name: "ZOO_SERVERS"
+            value: "server.1=hadoop-zookeeper-0.hadoop-zookeeper:2888:3888;2181 server.2=hadoop-zookeeper-1.hadoop-zookeeper:2888:3888;2181 server.3=hadoop-zookeeper-2.hadoop-zookeeper:2888:3888;2181"
+          volumeMounts:
+          - name: zookeeper
+            mountPath: /data
+          - name: zookeeper2
+            mountPath: /datalog
+          - name: cfg
+            mountPath: /conf
+          resources:
+            {{- toYaml .Values.resources_zookeeper | nindent 12 }}
+      initContainers:
+      - name: getzooid
+        image: zookeeper
+        env:
+        - name: "HOSTNAME"
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        command:
+        - bash
+        - "-c"
+        - |
+          echo $((${HOSTNAME:17:18} + 1)) > /mnt/myid
+          cat > /tmp/zoo.cfg << EOF
+          dataDir=/data
+          dataLogDir=/datalog
+          tickTime=2000
+          initLimit=5
+          syncLimit=2
+          autopurge.snapRetainCount=3
+          autopurge.purgeInterval=0
+          maxClientCnxns=60
+          standaloneEnabled=true
+          admin.enableServer=true
+          server.1=hadoop-zookeeper-0.hadoop-zookeeper:2888:3888;2181
+          server.2=hadoop-zookeeper-1.hadoop-zookeeper:2888:3888;2181
+          server.3=hadoop-zookeeper-2.hadoop-zookeeper:2888:3888;2181
+          EOF
+          export var=$HOSTNAME.hadoop-zookeeper && sed -i "s/$var/0.0.0.0/" /tmp/zoo.cfg
+          cat > /tmp/log4j.properties << 'EOF'
+          zookeeper.root.logger=INFO, CONSOLE
+          zookeeper.console.threshold=INFO
+          zookeeper.log.dir=.
+          zookeeper.log.file=zookeeper.log
+          zookeeper.log.threshold=INFO
+          zookeeper.log.maxfilesize=256MB
+          zookeeper.log.maxbackupindex=20
+          zookeeper.tracelog.dir=${zookeeper.log.dir}
+          zookeeper.tracelog.file=zookeeper_trace.log
+          log4j.rootLogger=${zookeeper.root.logger}
+          log4j.appender.CONSOLE=org.apache.log4j.ConsoleAppender
+          log4j.appender.CONSOLE.Threshold=${zookeeper.console.threshold}
+          log4j.appender.CONSOLE.layout=org.apache.log4j.PatternLayout
+          log4j.appender.CONSOLE.layout.ConversionPattern=%d{ISO8601} [myid:%X{myid}] - %-5p [%t:%C{1}@%L] - %m%n
+          log4j.appender.ROLLINGFILE=org.apache.log4j.RollingFileAppender
+          log4j.appender.ROLLINGFILE.Threshold=${zookeeper.log.threshold}
+          log4j.appender.ROLLINGFILE.File=${zookeeper.log.dir}/${zookeeper.log.file}
+          log4j.appender.ROLLINGFILE.MaxFileSize=${zookeeper.log.maxfilesize}
+          log4j.appender.ROLLINGFILE.MaxBackupIndex=${zookeeper.log.maxbackupindex}
+          log4j.appender.ROLLINGFILE.layout=org.apache.log4j.PatternLayout
+          log4j.appender.ROLLINGFILE.layout.ConversionPattern=%d{ISO8601} [myid:%X{myid}] - %-5p [%t:%C{1}@%L] - %m%n
+          log4j.appender.TRACEFILE=org.apache.log4j.FileAppender
+          log4j.appender.TRACEFILE.Threshold=TRACE
+          log4j.appender.TRACEFILE.File=${zookeeper.tracelog.dir}/${zookeeper.tracelog.file}
+          log4j.appender.TRACEFILE.layout=org.apache.log4j.PatternLayout
+          log4j.appender.TRACEFILE.layout.ConversionPattern=%d{ISO8601} [myid:%X{myid}] - %-5p [%t:%C{1}@%L][%x] - %m%n
+          EOF
+        volumeMounts:
+        - name: zookeeper
+          mountPath: /mnt/
+        - name: cfg
+          mountPath: /tmp/
+      volumes:
+        - name: cfg
+          emptyDir: {}
+        - name: zookeeper
+          emptyDir: {}
+        - name: zookeeper2
+          emptyDir: {}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+ #volumeClaimTemplates:
+ # - metadata:
+ #     name: zookeeper
+ #   spec:
+ #     accessModes: [ "ReadWriteOnce" ]
+ #     resources:
+ #       requests:
+ #         storage: {{ .Values.zookeeper.storage }}
+ # - metadata:
+ #     name: zookeeper2
+ #   spec:
+ #     accessModes: [ "ReadWriteOnce" ]
+ #     resources:
+ #       requests:
+ #         storage: {{ .Values.zookeeper.storage }}
+

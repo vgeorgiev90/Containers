@@ -15,8 +15,9 @@ HOSTNAME=$(hostname)
 if [ ${HOSTNAME} == "hadoop-namenode-0" ]; then
   echo "Formatting namenode name directory: $namedir"
   $HADOOP_PREFIX/bin/hdfs --config $HADOOP_CONF_DIR namenode -format $CLUSTER_NAME 
+  $HADOOP_PREFIX/bin/hdfs zkfc -formatZK
 else
   $HADOOP_PREFIX/bin/hdfs namenode -bootstrapStandby
 fi
-
+$HADOOP_PREFIX/bin/hdfs --config $HADOOP_CONF_DIR --daemon start zkfc
 $HADOOP_PREFIX/bin/hdfs --config $HADOOP_CONF_DIR namenode

@@ -4,7 +4,7 @@
 
 
 images:
-  #namenode: bde2020/hadoop-namenode:2.0.0-hadoop3.1.2-java8
+  zookeeper: zookeeper:latest
   namenode: viktor90/hadoop:namenode
   datanode: bde2020/hadoop-datanode:2.0.0-hadoop3.1.2-java8
   resourcemanager: bde2020/hadoop-resourcemanager:2.0.0-hadoop3.1.2-java8
@@ -15,9 +15,6 @@ images:
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
-
-namenode_pvc_size: 1Gi
-historyserver_pvc_size: 1Gi
 
 services:
   type: ClusterIP
@@ -31,6 +28,8 @@ namenodes:
 historyserver:
   storage: 1Gi
 
+zookeeper:
+  storage: 1Gi
 ## Number of datanode replicas , pod anti affinity is configured so set as the number of workers.
 datanodes: 
   count: 3
@@ -55,7 +54,6 @@ ingress:
 
 hadoop_env_config:
   cluster_name: "test"
-  #CORE_CONF_fs_defaultFS: "hdfs://hadoop-namenode-0.hadoop-namenode:8020"
   CORE_CONF_fs_defaultFS: "hdfs://hacluster"
   CORE_CONF_hadoop_http_staticuser_user: "root"
   CORE_CONF_hadoop_proxyuser_hue_hosts: "*"
@@ -116,13 +114,13 @@ resources: {}
   #   memory: 128Mi
 resources_datanode: {}
 
+resources_zookeeper: {}
 
 nodeSelector: {}
 #  app: hadoop
 
-tolerations:
-  - key: "node-role.kubernetes.io/master"
-    operator: "Exists"
-    effect: "NoSchedule"
+tolerations: {}
+#  - key: "node-role.kubernetes.io/master"
+#    operator: "Exists"
+#    effect: "NoSchedule"
 
-affinity: {}

@@ -73,7 +73,7 @@ spec:
       name: http
   selector:
     app: hadoop-historyserver
-  ClusterIP: None
+  clusterIP: None
 
 ---
 
@@ -92,7 +92,7 @@ spec:
       name: http
   selector:
     app: hadoop-datanode
-  ClusterIP: None
+  clusterIP: None
 
 ---
 
@@ -111,5 +111,36 @@ spec:
       name: http
   selector:
     app: hadoop-journalnode
-  ClusterIP: None
+  clusterIP: None
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: hadoop-zookeeper
+  labels:
+{{ include "hadoop.labels" . | indent 4 }}
+spec:
+  type: {{ .Values.services.type }}
+  ports:
+    - port: 2181
+      targetPort: 2181
+      protocol: TCP
+      name: client
+    - port: 2888
+      targetPort: 2888
+      protocol: TCP
+      name: follower
+    - port: 3888
+      targetPort: 3888
+      protocol: TCP
+      name: election
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+      name: admin
+  selector:
+    app: hadoop-zookeeper
+  clusterIP: None
 

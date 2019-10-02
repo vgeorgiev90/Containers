@@ -1,6 +1,6 @@
 FROM bde2020/hadoop-base
 
-MAINTAINER Ivan Ermilov <ivan.s.ermilov@gmail.com>
+MAINTAINER Viktor Georgiev "v.georgiev90@abv.bg"
 
 HEALTHCHECK CMD curl -f http://localhost:9870/ || exit 1
 

@@ -35,6 +35,7 @@ spec:
     {{- end }}
       containers:
         - name: {{ .Chart.Name }}
+          imagePullPolicy: Always
           image: "{{ .Values.images.namenode }}"
           ports:
             - name: http
@@ -50,7 +51,7 @@ spec:
           - name: "CLUSTER_NAME"
             value: "{{ .Values.hadoop_env_config.cluster_name }}"
           - name: "SERVICE_PRECONDITION"
-            value: "hadoop-journalnode:8485"
+            value: "hadoop-journalnode:8485 hadoop-zookeeper-0.hadoop-zookeeper:2181 hadoop-zookeeper-1.hadoop-zookeeper:2181 hadoop-zookeeper-2.hadoop-zookeeper:2181"
           volumeMounts:
           - name: namenode
             mountPath: /hadoop/dfs/name
