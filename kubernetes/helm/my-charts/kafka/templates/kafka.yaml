@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "kafka.fullname" . }}-kafka
+  labels:
+{{ include "kafka.labels" . | indent 4 }}
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: node-kafka
+      app.kubernetes.io/name: {{ include "kafka.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  serviceName: node-kafka
+  template:
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+            - key: app
+              operator: In
+              values:
+              - node-kafka
+          topologyKey: "kubernetes.io/hostname"
+    metadata:
+      labels:
+        app: node-kafka
+        app.kubernetes.io/name: {{ include "kafka.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.images.kafka }}"
+          imagePullPolicy: Always
+          ports:
+            - name: kafka
+              containerPort: 9092
+              protocol: TCP
+            - name: kafka2
+              containerPort: 19092
+              protocol: TCP
+          env:
+          - name: "HOSTNAME"
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: "HOSTNAME_COMMAND"
+            value: "echo $HOSTNAME.node-kafka"
+          - name: "ZOOKEEPER_CONNECT"
+            value: "node-zookeeper-0.node-zookeeper:2181,node-zookeeper-1.node-zookeeper:2181,node-zookeeper-2.node-zookeeper:2181"
+          - name: "ID_COMMAND"
+            value: "echo $((${HOSTNAME:11:12} + 1))"
+          volumeMounts:
+          - name: kafka
+            mountPath: /data
+          resources:
+            {{- toYaml .Values.resources_kafka | nindent 12 }}
+      volumes:
+        - name: kafka
+          emptyDir: {}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+ #volumeClaimTemplates:
+ # - metadata:
+ #     name: kafka
+ #   spec:
+ #     accessModes: [ "ReadWriteOnce" ]
+ #     resources:
+ #       requests:
+ #         storage: {{ .Values.kafka.storage }}
+
+
