@@ -16,10 +16,6 @@ zookeeper:
 
 kafka:
   storage: 1Gi
-  count:
-  - 0
-  - 1
-  - 2
 
 ingress:
   enabled: false
