@@ -47,6 +47,6 @@ spec:
       protocol: TCP
       name: follower
   selector:
-    service: node-kafka
+    app: node-kafka
   clusterIP: None
 

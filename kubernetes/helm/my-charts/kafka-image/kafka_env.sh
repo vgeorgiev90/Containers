@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ID=`eval ${ID_COMMAND}`
 HOST=`eval ${HOSTNAME_COMMAND}`
@@ -24,16 +24,18 @@ echo $LPM >> $conf_file
 echo $LISTENER >> $conf_file
 echo $ADVERTISE >> $conf_file
 
-
-nc -z ${HOST} 9092
+IFS=","
+for node in $ZOOS;do
+host=${node%%:*}
+nc -z $host 2181
 result=$?
 
 until [ $result -eq 0 ]; do
-	echo "Waiting for endpoint to become ready..."
+	echo "Waiting for zookeeper endpoints to become ready..."
 	sleep 5
-	nc -z ${HOST} 9092
+	nc -z $host 2181
         result=$?
 done
-
+done
 
 exec "$@"
