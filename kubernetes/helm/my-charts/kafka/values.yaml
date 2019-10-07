@@ -12,10 +12,14 @@ fullnameOverride: "node"
 
 
 zookeeper:
+  ## Zookeeper deployment
+  enabled: true
   storage: 1Gi
 
 kafka:
   storage: 1Gi
+  ## If zookeeper deployment is enabled leave this as default, if not specify your own zookeeper ensemble in the same format
+  zookeeper_connect: "node-zookeeper-0.node-zookeeper:2181,node-zookeeper-1.node-zookeeper:2181,node-zookeeper-2.node-zookeeper:2181"
 
 ingress:
   enabled: false

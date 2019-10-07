@@ -52,7 +52,7 @@ spec:
           - name: "HOSTNAME_COMMAND"
             value: "echo $HOSTNAME.node-kafka"
           - name: "ZOOKEEPER_CONNECT"
-            value: "node-zookeeper-0.node-zookeeper:2181,node-zookeeper-1.node-zookeeper:2181,node-zookeeper-2.node-zookeeper:2181"
+            value: {{ .Values.kafka.zookeeper_connect | quote }}
           - name: "ID_COMMAND"
             value: "echo $((${HOSTNAME:11:12} + 1))"
           volumeMounts:
