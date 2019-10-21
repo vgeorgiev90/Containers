@@ -12,38 +12,28 @@ data:
     global:
       scrape_interval: 5s
       evaluation_interval: 5s
-
     scrape_configs:
       - job_name: 'node-exporter'
         static_configs:
-        - targets: ['172.31.122.254:9100', '172.31.122.12:9100']
-
+        - targets: ['172.31.107.234:9100', '172.31.96.120:9100']
       - job_name: 'kubernetes-apiservers'
-
         kubernetes_sd_configs:
         - role: endpoints
         scheme: https
-
         tls_config:
           ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
         bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-
         relabel_configs:
         - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
           action: keep
           regex: default;kubernetes;https
-
       - job_name: 'kubernetes-nodes'
-
         scheme: https
-
         tls_config:
           ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
         bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-
         kubernetes_sd_configs:
         - role: node
-
         relabel_configs:
         - action: labelmap
           regex: __meta_kubernetes_node_label_(.+)
@@ -53,13 +43,9 @@ data:
           regex: (.+)
           target_label: __metrics_path__
           replacement: /api/v1/nodes/${1}/proxy/metrics
-
-
       - job_name: 'kubernetes-pods'
-
         kubernetes_sd_configs:
         - role: pod
-
         relabel_configs:
         - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
           action: keep
@@ -81,18 +67,13 @@ data:
         - source_labels: [__meta_kubernetes_pod_name]
           action: replace
           target_label: kubernetes_pod_name
-
       - job_name: 'kubernetes-cadvisor'
-
         scheme: https
-
         tls_config:
           ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
         bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-
         kubernetes_sd_configs:
         - role: node
-
         relabel_configs:
         - action: labelmap
           regex: __meta_kubernetes_node_label_(.+)
@@ -102,12 +83,9 @@ data:
           regex: (.+)
           target_label: __metrics_path__
           replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
-
       - job_name: 'kubernetes-service-endpoints'
-
         kubernetes_sd_configs:
         - role: endpoints
-
         relabel_configs:
         - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
           action: keep
@@ -133,7 +111,6 @@ data:
         - source_labels: [__meta_kubernetes_service_name]
           action: replace
           target_label: kubernetes_name
-
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
@@ -194,13 +171,16 @@ spec:
 ---
 
 
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: prometheus-deployment
   namespace: monitoring
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus-server
   template:
     metadata:
       labels:
@@ -260,7 +240,7 @@ spec:
   selector:
     app: kube-state-metrics
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: kube-state-metrics
@@ -269,6 +249,9 @@ metadata:
     app: kube-state-metrics
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: kube-state-metrics
   template:
     metadata:
       name: kube-state-metrics-main
@@ -281,4 +264,3 @@ spec:
           ports:
           - containerPort: 8080
             name: metrics
-
