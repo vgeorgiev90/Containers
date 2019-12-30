@@ -1,0 +1,13 @@
+### MANAGED BY PUPPET ###
+---
+cluster.name: elasticsearch-cluster
+network.host: 0.0.0.0
+node.name: elasticsearch-cluster
+path.data: "/usr/share/elasticsearch/data/elasticsearch-cluster"
+path.logs: "/var/log/elasticsearch/elasticsearch-cluster"
+http.host: 0.0.0.0
+transport.host: 0.0.0.0
+xpack.security.enabled: false
+xpack.monitoring.enabled: false
+discovery.type: single-node
+cluster.routing.allocation.disk.threshold_enabled: false
