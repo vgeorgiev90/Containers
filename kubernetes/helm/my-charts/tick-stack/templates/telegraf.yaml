@@ -1,0 +1,150 @@
+apiVersion: v1
+data:
+  telegraf.conf: |+
+    [global_tags]
+      environment = "$ENVIRONMENT"
+      teamname = "$TEAM_NAME"
+      region = "eu-west-1"
+    [agent]
+      interval = "10s"
+      round_interval = true
+      metric_batch_size = 1000
+      metric_buffer_limit = 10000
+      collection_jitter = "0s"
+      flush_interval = "10s"
+      flush_jitter = "0s"
+      precision = ""
+      debug = false
+      quiet = false
+      logfile = ""
+      hostname = "$HOSTNAME"
+      omit_hostname = false
+    [[outputs.influxdb]]
+      urls = ["$INFLUXDB_URL"] # required
+      database = "$INFLUXDB_OUTPUT_DATABASE" # required
+      retention_policy = ""
+      write_consistency = "any"
+      timeout = "5s"
+      username = "$INFLUXDB_USER"
+      password = "$INFLUXDB_PASSWORD"
+    [[inputs.cpu]]
+      percpu = true
+      totalcpu = true
+      collect_cpu_time = false
+      report_active = false
+    [[inputs.disk]]
+      ignore_fs = ["tmpfs", "devtmpfs", "devfs"]
+    [[inputs.diskio]]
+    [[inputs.kernel]]
+    [[inputs.mem]]
+    [[inputs.processes]]
+    [[inputs.swap]]
+    [[inputs.system]]
+    [[inputs.docker]]
+      endpoint = "unix:///var/run/docker.sock"
+      timeout = "5s"
+      perdevice = true
+      total = false
+    [[inputs.kubernetes]]
+      url = "https://$NODE_NAME:10250"
+      bearer_token = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+      insecure_skip_verify = true
+kind: ConfigMap
+metadata:
+  name: telegraf-cm
+  namespace: {{ .Values.namespace }}
+
+
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "tick-stack.fullname" . }}-telegraf
+  namespace: {{ .Values.namespace }}
+  labels:
+{{ include "tick-stack.labels" . | indent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "tick-stack.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      application: telegraf
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "tick-stack.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        application: telegraf
+    spec:
+      serviceAccount: telegraf
+      containers:
+        - name: {{ .Chart.Name }}-telegraf
+          image: viktor90/telegraf:1.0
+          imagePullPolicy: Always
+          ports:
+            - name: telegraf
+              containerPort: 8186
+              protocol: TCP
+          env:
+          - name: "NODE_NAME"
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+          - name: "INFLUXDB_URL"
+            value: "http://influxdb-monitoring.monitoring:8086"
+          - name: "INFLUXDB_USER"
+            value: "{{ .Values.influx.admin_user }}"
+          - name: "INFLUXDB_PASSWORD"
+            value: "{{ .Values.influx.admin_password }}"
+          - name: "INFLUXDB_OUTPUT_DATABASE"
+            value: "telegraf"
+          - name: "OUTPUTS_INFLUXDB_RETENTION_POLICY"
+            value: "\"\""
+          - name: "INPUTS_KAPACITOR_URL"
+            value: "http://kapacitor-monitoring.monitoring:9092/kapacitor/v1/debug/vars"
+          - name: "INPUTS_HTTP_LISTENER"
+            value: "enabled"
+          - name: "INPUTS_HTTP_LISTENER_USERNAME"
+            value: "{{ .Values.telegraf.admin_user }}"
+          - name: "INPUTS_HTTP_LISTENER_PASSWORD"
+            value: "{{ .Values.telegraf.admin_password }}"
+          volumeMounts:
+          - name: telegraf-monitoring
+            mountPath: /storage
+          - name: docker-socket
+            mountPath: /var/run
+            readOnly: true
+          - name: telegraf-conf
+            mountPath: /etc/telegraf/telegraf.conf
+            subPath: telegraf.conf
+          - name: sys
+            mountPath: /rootfs/sys
+            readOnly: true
+          - name: proc
+            mountPath: /rootfs/proc
+            readOnly: true
+          - name: utmp
+            mountPath: /var/run/utmp
+            readOnly: true
+          resources:
+            {{- toYaml .Values.telegraf_resources | nindent 12 }}
+      volumes:
+      - name: docker-socket
+        hostPath:
+          path: /var/run
+      - name: telegraf-monitoring
+        ## Fix this
+        emptyDir: {}
+      - name: telegraf-conf
+        configMap:
+          name: telegraf-cm
+      - name: sys
+        hostPath:
+          path: /sys
+      - name: proc
+        hostPath:
+          path: /proc
+      - name: utmp
+        hostPath:
+          path: /var/run/utmp
+

@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "tick-stack.fullname" . }}-grafana
+  namespace: {{ .Values.namespace }}
+  labels:
+{{ include "tick-stack.labels" . | indent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "tick-stack.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      application: grafana
+  serviceName: grafana-monitoring
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "tick-stack.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        application: grafana
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}-grafana
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: grafana/grafana
+          imagePullPolicy: Always
+          ports:
+            - name: grafana
+              containerPort: 3000
+              protocol: TCP
+          env:
+          - name: "GF_SECURITY_ADMIN_USER"
+            value: "{{ .Values.grafana.admin_user }}"
+          - name: "GF_SECURITY_ADMIN_PASSWORD"
+            value: "{{ .Values.grafana.admin_password }}"
+          - name: "GF_SECURITY_SECRET_KEY"
+            value: "{{ .Values.grafana.secret_name }}"
+          volumeMounts:
+          - name: grafana-monitoring
+            mountPath: /var/lib/grafana
+          - name: datasource
+            mountPath: /etc/grafana/provisioning/datasources/data.yaml
+            subPath: data.yaml
+          - name: dashboard-provisioning
+            mountPath: /etc/grafana/provisioning/dashboards/all.yaml
+            subPath: all.yaml
+          - name: dash-1
+            mountPath: /var/lib/grafana/dashboards/k8s_container_statuses.json
+            subPath: k8s_container_statuses.json
+          - name: dash-2
+            mountPath: /var/lib/grafana/dashboards/k8s_cluster_health.json
+            subPath: k8s_cluster_health.json
+          - name: dash-3
+            mountPath: /var/lib/grafana/dashboards/docker_container_metrics.json
+            subPath: docker_container_metrics.json
+          resources:
+            {{- toYaml .Values.grafana_resources | nindent 12 }}
+      volumes:
+      - name: datasource
+        configMap:
+          name: grafana-provisioning-datasources
+      - name: dashboard-provisioning
+        configMap:
+          name: grafana-provisioning-dashboards
+      - name: dash-1
+        configMap:
+          name: grafana-dash-1
+      - name: dash-2
+        configMap:
+          name: grafana-dash-2
+      - name: dash-3
+        configMap:
+          name: grafana-dash-3
+      initContainers:
+      - name: permissions
+        image: busybox
+        command:
+        - sh
+        - "-c"
+        - |
+          chown -R 472:472 /var/lib/grafana
+        volumeMounts:
+        - name: grafana-monitoring
+          mountPath: /var/lib/grafana
+  volumeClaimTemplates:
+  - metadata:
+      name: grafana-monitoring
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 10Gi    

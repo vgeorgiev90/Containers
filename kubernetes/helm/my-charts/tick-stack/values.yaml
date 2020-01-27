@@ -1,0 +1,31 @@
+chronograf_resources: {}
+fullnameOverride: ""
+nameOverride: ""
+## namespace
+namespace: monitoring
+## Grafana
+grafana:
+  admin_password: viktor123
+  admin_user: admin
+  secret_key: 483880e5e453
+  service_annotations:
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+grafana_resources: {}
+
+### InfluxDB
+influx:
+  admin_password: viktor123
+  admin_user: admin
+  database_name: telegraf
+influx_resources: {}
+### Kapacitor
+kapacitor:
+  opsgenie_api_key: ""
+  opsgenie_enabled: "false"
+  opsgenie_url: https://api.eu.opsgenie.com/v2/alerts
+kapacitor_resources: {}
+## Telegraf
+telegraf:
+  admin_password: telegraf123
+  admin_user: telegraf
+telegraf_resources: {}

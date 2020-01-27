@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "tick-stack.fullname" . }}-kapacitor
+  namespace: {{ .Values.namespace }}
+  labels:
+{{ include "tick-stack.labels" . | indent 4 }}
+spec:
+  serviceName: kapacitor-monitoring
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "tick-stack.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      application: kapacitor
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "tick-stack.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        application: kapacitor
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}-kapacitor
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: kapacitor
+          imagePullPolicy: Always
+          ports:
+            - name: kapacitor
+              containerPort: 9092
+              protocol: TCP
+          env:
+          - name: "KAPACITOR_INFLUXDB_0_URLS_0"
+            value: "http://influxdb-monitoring.monitoring:8086"
+          - name: "KAPACITOR_INFLUXDB_0_USERNAME"
+            value: "{{ .Values.influx.admin_user }}"
+          - name: "KAPACITOR_INFLUXDB_0_PASSWORD"
+            value: "{{ .Values.influx.admin_password }}"
+          - name: "KAPACITOR_HOSTNAME"
+            value: "kapacitor-0"
+          - name: "KAPACITOR_LOAD_ENABLED"
+            value: "true"
+          - name: "KAPACITOR_LOAD_DIR"
+            value: "/storage/kapacitor/"
+          - name: "KAPACITOR_LOGGING_LEVEL"
+            value: "WARN"
+          - name: "KAPACITOR_REPORTING_ENABLED"
+            value: "false"
+          - name: "KAPACITOR_HTTP_LOG_ENABLED"
+            value: "false"
+          - name: "KAPACITOR_OPSGENIE2_URL"
+            value: "{{ .Values.kapacitor.opsgenie_url }}"
+          - name: "KAPACITOR_OPSGENIE2_API_KEY"
+            value: "{{ .Values.kapacitor.opsgenie_api_name }}"
+          - name: "KAPACITOR_OPSGENIE2_ENABLED"
+            value: "{{ .Values.kapacitor.opsgenie_enabled }}"
+          - name: "KAPACITOR_OPSGENIE2_RECOVERY_ACTION"
+            value: "close"
+          volumeMounts:
+          - name: kapacitor-monitoring
+            mountPath: /storage
+          resources:
+            {{- toYaml .Values.kapacitor_resources | nindent 12 }}
+  volumeClaimTemplates:
+  - metadata:
+      name: kapacitor-monitoring
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 20Gi    

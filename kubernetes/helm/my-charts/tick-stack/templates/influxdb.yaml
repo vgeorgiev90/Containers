@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "tick-stack.fullname" . }}-influxdb
+  namespace: {{ .Values.namespace }}
+  labels:
+{{ include "tick-stack.labels" . | indent 4 }}
+spec:
+  serviceName: influxdb-monitoring
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "tick-stack.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      application: influxdb
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "tick-stack.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        application: influxdb
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}-influxdb
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: influxdb
+          imagePullPolicy: Always
+          ports:
+            - name: influx
+              containerPort: 8088
+              protocol: TCP
+            - name: influx2
+              containerPort: 8086
+              protocol: TCP
+          env:
+          - name: "INFLUXDB_HTTP_AUTH_ENABLED"
+            value: "true"
+          - name: "INFLUXDB_ADMIN_USER"
+            value: "{{ .Values.influx.admin_user }}"
+          - name: "INFLUXDB_ADMIN_PASSWORD"
+            value: "{{ .Values.influx.admin_password }}"
+          - name: "INFLUXDB_DB"
+            value: "{{ .Values.influx.database_name }}"
+          - name: "INFLUXDB_BIND_ADDRESS"
+            value: "0.0.0.0:8088"
+          - name: "INFLUXDB_REPORTING_DISABLED"
+            value: "true"
+          - name: "INFLUXDB_META_LOGGING_ENABLED"
+            value: "false"
+          - name: "INFLUXDB_DATA_QUERY_LOG_ENABLED"
+            value: "false"
+          - name: "INFLUXDB_HTTP_LOG_ENABLED"
+            value: "false"
+          - name: "INFLUXDB_HTTP_PPROF_ENABLED"
+            value: "false"
+          - name: "INFLUXDB_CONTINUOUS_QUERIES_LOG_ENABLED"
+            value: "false"
+          - name: "INFLUXDB_HTTP_MAX_BODY_SIZE"
+            value: "0"
+          volumeMounts:
+          - name: influxdb-monitoring
+            mountPath: /var/lib/influxdb
+          resources:
+            {{- toYaml .Values.influx_resources | nindent 12 }}
+  volumeClaimTemplates:
+  - metadata:
+      name: influxdb-monitoring
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 20Gi    
