@@ -44,7 +44,7 @@ spec:
           - name: "KAPACITOR_INFLUXDB_0_PASSWORD"
             value: "{{ .Values.influx.admin_password }}"
           - name: "KAPACITOR_HOSTNAME"
-            value: "kapacitor-0"
+            value: {{ include "tick-stack.fullname" . }}-kapacitor-0
           - name: "KAPACITOR_LOAD_ENABLED"
             value: "true"
           - name: "KAPACITOR_LOAD_DIR"
