@@ -41,7 +41,7 @@ data:
     [[inputs.swap]]
     [[inputs.system]]
     [[inputs.docker]]
-      endpoint = "unix:///var/run/docker.sock"
+      endpoint = "unix:///tmp/docker.sock"
       timeout = "5s"
       perdevice = true
       total = false
@@ -112,8 +112,7 @@ spec:
           - name: telegraf-monitoring
             mountPath: /storage
           - name: docker-socket
-            mountPath: /var/run
-            readOnly: true
+            mountPath: /tmp/docker.sock
           - name: telegraf-conf
             mountPath: /etc/telegraf/telegraf.conf
             subPath: telegraf.conf
@@ -131,7 +130,8 @@ spec:
       volumes:
       - name: docker-socket
         hostPath:
-          path: /var/run
+          path: /var/run/docker.sock
+          type: Socket
       - name: telegraf-monitoring
         ## Fix this
         emptyDir: {}
