@@ -1,6 +1,8 @@
 chronograf_resources: {}
 fullnameOverride: ""
 nameOverride: ""
+team_name: OTF
+environment: development
 ## namespace
 namespace: monitoring
 ## Grafana
