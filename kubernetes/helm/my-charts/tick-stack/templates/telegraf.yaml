@@ -4,7 +4,6 @@ data:
     [global_tags]
       environment = "$ENVIRONMENT"
       teamname = "$TEAM_NAME"
-      region = "eu-west-1"
     [agent]
       interval = "10s"
       round_interval = true
@@ -17,7 +16,7 @@ data:
       debug = false
       quiet = false
       logfile = ""
-      hostname = "$HOSTNAME"
+      hostname = "$NODE_NAME"
       omit_hostname = false
     [[outputs.influxdb]]
       urls = ["$INFLUXDB_URL"] # required
@@ -90,6 +89,10 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: spec.nodeName
+          - name: "TEAM_NAME"
+            value: "{{ .Values.team_name }}"
+          - name: "ENVIRONMENT"
+            value: "{{ .Values.environment }}"
           - name: "INFLUXDB_URL"
             value: "http://influxdb-monitoring.monitoring:8086"
           - name: "INFLUXDB_USER"
