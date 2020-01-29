@@ -48,7 +48,7 @@ spec:
           - name: "KAPACITOR_LOAD_ENABLED"
             value: "true"
           - name: "KAPACITOR_LOAD_DIR"
-            value: "/storage/kapacitor/"
+            value: "/storage"
           - name: "KAPACITOR_LOGGING_LEVEL"
             value: "WARN"
           - name: "KAPACITOR_REPORTING_ENABLED"
@@ -65,9 +65,17 @@ spec:
             value: "close"
           volumeMounts:
           - name: kapacitor-monitoring
-            mountPath: /storage
+            mountPath: /var/lib/kapacitor
+          - name: kapacitor-tasks
+            mountPath: /storage/tasks
+          #- name: kapacitor-handlers
+          #  mountPath: /storage/handlers
           resources:
             {{- toYaml .Values.kapacitor_resources | nindent 12 }}
+      volumes:
+      - name: kapacitor-tasks
+        configMap:
+          name: kapacitor-tick-scripts
   volumeClaimTemplates:
   - metadata:
       name: kapacitor-monitoring
@@ -75,4 +83,4 @@ spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
-          storage: 20Gi    
+          storage: 10Gi    

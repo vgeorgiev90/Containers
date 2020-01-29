@@ -1,0 +1,148 @@
+apiVersion: v1
+data:
+  CPU-Idle-Alert.tick: |+
+    var db = 'telegraf'
+
+    var rp = 'autogen'
+
+    var measurement = 'cpu'
+
+    var groupBy = ['host']
+
+    var whereFilter = lambda: TRUE
+
+    var name = 'CPU-Alert'
+
+    var idVar = name + '-{{.Group}}'
+
+    var message = '{{ .ID }} is {{ .Level }} value: {{ index .Fields "value" }}.'
+
+    var idTag = 'alertID'
+
+    var levelTag = 'level'
+
+    var messageField = 'message'
+
+    var durationField = 'duration'
+
+    var outputDB = 'chronograf'
+
+    var outputRP = 'autogen'
+
+    var outputMeasurement = 'alerts'
+
+    var triggerType = 'threshold'
+
+    var crit = 80
+
+    var data = stream
+        |from()
+            .database(db)
+            .retentionPolicy(rp)
+            .measurement(measurement)
+            .groupBy(groupBy)
+            .where(whereFilter)
+        |eval(lambda: "usage_idle")
+            .as('value')
+
+    var trigger = data
+        |alert()
+            .crit(lambda: "value" < crit)
+            .message(message)
+            .id(idVar)
+            .idTag(idTag)
+            .levelTag(levelTag)
+            .messageField(messageField)
+            .durationField(durationField)
+            .log('/tmp/cpu-alert.log')
+
+    trigger
+        |eval(lambda: float("value"))
+            .as('value')
+            .keep()
+        |influxDBOut()
+            .create()
+            .database(outputDB)
+            .retentionPolicy(outputRP)
+            .measurement(outputMeasurement)
+            .tag('alertName', name)
+            .tag('triggerType', triggerType)
+
+    trigger
+        |httpOut('output')
+
+  Memory-Alert.tick: |
+    var db = 'telegraf'
+
+    var rp = 'autogen'
+
+    var measurement = 'mem'
+
+    var groupBy = ['host']
+
+    var whereFilter = lambda: TRUE
+
+    var name = 'Memory-Alert'
+
+    var idVar = name + '-{{.Group}}'
+
+    var message = '{{ .ID }} is {{ .Level }} value: {{ index .Fields "value" }}.'
+
+    var idTag = 'alertID'
+
+    var levelTag = 'level'
+
+    var messageField = 'message'
+
+    var durationField = 'duration'
+
+    var outputDB = 'chronograf'
+
+    var outputRP = 'autogen'
+
+    var outputMeasurement = 'alerts'
+
+    var triggerType = 'threshold'
+
+    var crit = 20
+
+    var data = stream
+        |from()
+            .database(db)
+            .retentionPolicy(rp)
+            .measurement(measurement)
+            .groupBy(groupBy)
+            .where(whereFilter)
+        |eval(lambda: "available_percent")
+            .as('value')
+
+    var trigger = data
+        |alert()
+            .crit(lambda: "value" < crit)
+            .stateChangesOnly()
+            .message(message)
+            .id(idVar)
+            .idTag(idTag)
+            .levelTag(levelTag)
+            .messageField(messageField)
+            .durationField(durationField)
+            .log('/tmp/memory-alert.log')
+
+    trigger
+        |eval(lambda: float("value"))
+            .as('value')
+            .keep()
+        |influxDBOut()
+            .create()
+            .database(outputDB)
+            .retentionPolicy(outputRP)
+            .measurement(outputMeasurement)
+            .tag('alertName', name)
+            .tag('triggerType', triggerType)
+
+    trigger
+        |httpOut('output')
+kind: ConfigMap
+metadata:
+  name: kapacitor-tick-scripts
+  namespace: {{ .Values.namespace }}
