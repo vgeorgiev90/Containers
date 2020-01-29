@@ -57,7 +57,7 @@ spec:
       name: kapacitor
   selector:
     application: kapacitor
-  ClusterIP: None
+  clusterIP: None
 
 ---
 
