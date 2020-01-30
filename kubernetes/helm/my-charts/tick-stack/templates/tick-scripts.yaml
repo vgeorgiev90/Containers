@@ -34,7 +34,7 @@ data:
     var triggerType = 'threshold'
 
     var crit = 80
-
+    dbrp "db"."rp"
     var data = stream
         |from()
             .database(db)
@@ -105,7 +105,7 @@ data:
     var triggerType = 'threshold'
 
     var crit = 20
-
+    dbrp "db"."rp"
     var data = stream
         |from()
             .database(db)
