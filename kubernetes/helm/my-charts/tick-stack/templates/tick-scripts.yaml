@@ -15,7 +15,7 @@ data:
 
     var idVar = name + '-{{.Group}}'
 
-    var message = '{{ .ID }} is {{ .Level }} value: {{ index .Fields "value" }}.'
+    var message = {{`'{{ .ID }} is {{ .Level }} value: {{ index .Fields "value" }}.'`}}
 
     var idTag = 'alertID'
 
@@ -86,7 +86,7 @@ data:
 
     var idVar = name + '-{{.Group}}'
 
-    var message = '{{ .ID }} is {{ .Level }} value: {{ index .Fields "value" }}.'
+    var message = {{`'{{ .ID }} is {{ .Level }} value: {{ index .Fields "value" }}.'`}}
 
     var idTag = 'alertID'
 
