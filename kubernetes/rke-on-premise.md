@@ -205,6 +205,12 @@ ingress:
   provider: nginx
   node_selector:
     app: ingress
+  network_mode: hostPort
+  http_port: 80
+  https_port: 443
+  extra_args:
+    http-port: 80
+    https-port: 443
   # Available as of v1.1.0
   update_strategy:
     strategy: RollingUpdate
