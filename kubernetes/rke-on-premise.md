@@ -55,7 +55,7 @@ swapoff -a
 wget https://github.com/rancher/rke/releases/download/v1.4.3/rke_linux-amd64 && mv rke_linux-amd64 /usr/local/bin/rke && chmod +x /usr/local/bin/rke && rke --help
 ```
 
-3. Save the following content to cluster.yml, the kubernetes cluster will be deployed with this options, more information on the available configuration can be found [here](https://rke.docs.rancher.com/config-options).
+3. Save the following content to cluster.yml, the kubernetes cluster will be deployed with this options, more information on the available configuration can be found [here](https://rke.docs.rancher.com/config-options). The cluster can be bootstraped with the command `rke up`
 ```
 nodes:
     - address: 192.168.100.147  ### IP address of the master
